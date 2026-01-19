@@ -1,0 +1,82 @@
+{
+  "name": "@llm-shield/credential-exposure-detection-agent",
+  "version": "1.0.0",
+  "description": "Credential Exposure Detection Agent for LLM-Shield - Detects accidental exposure of usernames, passwords, and authentication artifacts",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./handler": {
+      "import": "./dist/handler.js",
+      "types": "./dist/handler.d.ts"
+    },
+    "./cli": {
+      "import": "./dist/cli.js",
+      "types": "./dist/cli.d.ts"
+    }
+  },
+  "bin": {
+    "credential-exposure-detection": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "AGENT.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src --ext .ts",
+    "cli": "node --loader ts-node/esm src/cli.ts"
+  },
+  "keywords": [
+    "llm-shield",
+    "security",
+    "credential-detection",
+    "password-detection",
+    "authentication",
+    "edge-function",
+    "google-cloud"
+  ],
+  "author": "LLM-Shield Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/llm-dev-ops/shield.git",
+    "directory": "agents/credential-exposure-detection"
+  },
+  "dependencies": {
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "@llm-shield/agentics-contracts": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "agentMetadata": {
+    "agent_id": "credential-exposure-detection-agent",
+    "agent_version": "1.0.0",
+    "classification": "DETECTION_ONLY",
+    "decision_type": "credential_exposure_detection",
+    "deployment": "google-cloud-edge-function",
+    "invocation_sources": [
+      "LLM-Edge-Agent",
+      "LLM-Core",
+      "agentics-cli"
+    ],
+    "persistence": "ruvector-service",
+    "telemetry": "llm-observatory"
+  }
+}
