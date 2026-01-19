@@ -39,7 +39,7 @@
   "author": "LLM-Shield Team",
   "license": "MIT",
   "dependencies": {
-    "@llm-shield/agentics-contracts": "workspace:*",
+    "@llm-shield/agentics-contracts": "file:../contracts",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

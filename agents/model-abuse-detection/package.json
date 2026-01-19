@@ -58,7 +58,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@llm-shield/agentics-contracts": "workspace:*"
+    "@llm-shield/agentics-contracts": "file:../contracts"
   },
   "devDependencies": {
     "@google-cloud/functions-framework": "^3.3.0",

@@ -7,8 +7,15 @@
   "workspaces": [
     "contracts",
     "prompt-injection-detection",
+    "pii-detection",
+    "data-redaction",
+    "secrets-leakage-detection",
+    "toxicity-detection",
+    "safety-boundary",
+    "content-moderation",
     "model-abuse-detection",
-    "content-moderation"
+    "credential-exposure-detection",
+    "service"
   ],
   "scripts": {
     "build": "npm run build --workspaces",

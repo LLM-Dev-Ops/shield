@@ -1,0 +1,47 @@
+# Node modules (will be installed during build)
+node_modules
+*/node_modules
+
+# Build artifacts (will be generated during build)
+dist
+*/dist
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test files
+*.test.ts
+*.spec.ts
+__tests__
+coverage
+
+# Documentation
+*.md
+!README.md
+docs
+
+# Development files
+.env
+.env.local
+.env.*.local
+
+# Scripts (not needed in container)
+scripts
+
+# IAM files
+iam
+
+# Misc
+.DS_Store
+Thumbs.db

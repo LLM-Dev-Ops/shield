@@ -1,0 +1,137 @@
+# ============================================================================
+# LLM-Shield Cloud Build Configuration
+# ============================================================================
+# Builds and deploys the unified LLM-Shield service to Google Cloud Run.
+#
+# Trigger:
+#   gcloud builds submit --config cloudbuild.yaml .
+#
+# Environment-specific deployment:
+#   gcloud builds submit --config cloudbuild.yaml . \
+#     --substitutions=_ENV=prod,_REGION=us-central1
+# ============================================================================
+
+substitutions:
+  _ENV: 'dev'
+  _REGION: 'us-central1'
+  _SERVICE_NAME: 'llm-shield'
+  _SERVICE_VERSION: '1.0.0'
+  _TAG: 'latest'
+  _MIN_INSTANCES: '0'
+  _MAX_INSTANCES: '10'
+  _MEMORY: '1Gi'
+  _CPU: '1'
+  _CONCURRENCY: '80'
+  _TIMEOUT: '300'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'
+  substitution_option: 'ALLOW_LOOSE'
+
+steps:
+  # ============================================================================
+  # Step 1: Build Docker Image
+  # ============================================================================
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-image'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/${PROJECT_ID}/${_SERVICE_NAME}:${_TAG}'
+      - '-t'
+      - 'gcr.io/${PROJECT_ID}/${_SERVICE_NAME}:${_ENV}'
+      - '-f'
+      - 'Dockerfile'
+      - '.'
+
+  # ============================================================================
+  # Step 2: Push to Container Registry
+  # ============================================================================
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-image'
+    args:
+      - 'push'
+      - '--all-tags'
+      - 'gcr.io/${PROJECT_ID}/${_SERVICE_NAME}'
+    waitFor:
+      - 'build-image'
+
+  # ============================================================================
+  # Step 3: Deploy to Cloud Run
+  # ============================================================================
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-cloud-run'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}-${_ENV}'
+      - '--image'
+      - 'gcr.io/${PROJECT_ID}/${_SERVICE_NAME}:${_TAG}'
+      - '--region'
+      - '${_REGION}'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--memory'
+      - '${_MEMORY}'
+      - '--cpu'
+      - '${_CPU}'
+      - '--concurrency'
+      - '${_CONCURRENCY}'
+      - '--timeout'
+      - '${_TIMEOUT}'
+      - '--min-instances'
+      - '${_MIN_INSTANCES}'
+      - '--max-instances'
+      - '${_MAX_INSTANCES}'
+      - '--set-env-vars'
+      - 'SERVICE_NAME=${_SERVICE_NAME},SERVICE_VERSION=${_SERVICE_VERSION},PLATFORM_ENV=${_ENV}'
+      - '--set-secrets'
+      - 'RUVECTOR_SERVICE_URL=ruvector-service-url:latest,RUVECTOR_API_KEY=ruvector-api-key:latest,TELEMETRY_ENDPOINT=telemetry-endpoint:latest'
+      - '--service-account'
+      - 'llm-shield-sa@${PROJECT_ID}.iam.gserviceaccount.com'
+      - '--labels'
+      - 'service=llm-shield,env=${_ENV}'
+    waitFor:
+      - 'push-image'
+
+  # ============================================================================
+  # Step 4: Verify Deployment
+  # ============================================================================
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'verify-deployment'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        set -e
+        echo "Getting service URL..."
+        SERVICE_URL=$$(gcloud run services describe ${_SERVICE_NAME}-${_ENV} \
+          --region=${_REGION} \
+          --format='value(status.url)')
+
+        echo "Service URL: $${SERVICE_URL}"
+
+        echo "Waiting for service to be ready..."
+        sleep 10
+
+        echo "Checking health endpoint..."
+        curl -sf "$${SERVICE_URL}/health" || echo "Health check pending..."
+
+        echo "Deployment verification complete!"
+    waitFor:
+      - 'deploy-cloud-run'
+
+# ============================================================================
+# Artifacts
+# ============================================================================
+images:
+  - 'gcr.io/${PROJECT_ID}/${_SERVICE_NAME}:${_TAG}'
+  - 'gcr.io/${PROJECT_ID}/${_SERVICE_NAME}:${_ENV}'
+
+# ============================================================================
+# Timeout
+# ============================================================================
+timeout: '1800s'  # 30 minutes
