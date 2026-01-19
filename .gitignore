@@ -25,12 +25,21 @@ yarn-error.log*
 
 # Claude Code
 .claude-flow/
+.claude/
+.mcp.json
+/CLAUDE.md
 
 # Build artifacts
 dist/
 build/
 *.wasm
-*.d.ts
+
+# TypeScript build outputs (keep .d.ts for published packages)
+*.js.map
+*.d.ts.map
+agents/contracts/*.js
+agents/contracts/*.d.ts
+agents/**/dist/
 
 # Test coverage
 coverage/

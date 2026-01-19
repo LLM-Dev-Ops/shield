@@ -1,0 +1,81 @@
+{
+  "name": "@llm-shield/model-abuse-detection-agent",
+  "version": "1.0.0",
+  "description": "Model Abuse Detection Agent for LLM-Shield - Detects patterns of misuse, abuse, or exploitation of LLM systems",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "model-abuse-detection-agent": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./edge": {
+      "import": "./dist/handler.js",
+      "types": "./dist/handler.d.ts"
+    },
+    "./detector": {
+      "import": "./dist/detector.js",
+      "types": "./dist/detector.d.ts"
+    },
+    "./patterns": {
+      "import": "./dist/patterns.js",
+      "types": "./dist/patterns.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "llm",
+    "security",
+    "model-abuse",
+    "detection",
+    "agent",
+    "shield",
+    "ai-safety",
+    "rate-limiting",
+    "api-abuse"
+  ],
+  "author": "LLM-Shield Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/llm-shield/shield.git",
+    "directory": "agents/model-abuse-detection"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@llm-shield/agentics-contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "@google-cloud/functions-framework": "^3.3.0",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "@google-cloud/functions-framework": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@google-cloud/functions-framework": {
+      "optional": true
+    }
+  },
+  "files": [
+    "dist",
+    "AGENT.md"
+  ]
+}

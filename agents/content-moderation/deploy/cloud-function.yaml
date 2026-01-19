@@ -1,0 +1,95 @@
+# Google Cloud Function Deployment Configuration
+# Content Moderation Agent - LLM-Shield
+
+apiVersion: v1
+kind: CloudFunction
+metadata:
+  name: content-moderation-agent
+  namespace: llm-shield
+  labels:
+    app: llm-shield
+    agent: content-moderation
+    classification: enforcement
+
+spec:
+  runtime: nodejs20
+  entryPoint: contentModeration
+  trigger:
+    http:
+      path: /content-moderation
+
+  resources:
+    memory: 256Mi
+    cpu: 1
+    maxInstances: 100
+    minInstances: 0
+    timeout: 30s
+
+  environment:
+    - name: NODE_ENV
+      value: production
+    - name: RUVECTOR_SERVICE_URL
+      valueFrom:
+        secretRef:
+          name: ruvector-service-url
+    - name: TELEMETRY_ENABLED
+      value: "true"
+    - name: LLM_OBSERVATORY_URL
+      valueFrom:
+        secretRef:
+          name: llm-observatory-url
+
+  scaling:
+    concurrency: 80
+    cooldownPeriod: 60
+
+  networking:
+    ingressSettings: ALLOW_ALL
+    vpcConnector: llm-shield-vpc
+    egressSettings: PRIVATE_RANGES_ONLY
+
+  security:
+    serviceAccount: llm-shield-agent@project.iam.gserviceaccount.com
+    invokerIAM:
+      - allUsers  # Public API endpoint
+
+---
+# Cloud Run Alternative Configuration
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: content-moderation-agent
+  namespace: llm-shield
+  annotations:
+    run.googleapis.com/ingress: all
+
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "100"
+        run.googleapis.com/cpu-throttling: "false"
+
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 30
+
+      containers:
+        - image: gcr.io/llm-shield/content-moderation-agent:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              memory: 256Mi
+              cpu: "1"
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: RUVECTOR_SERVICE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ruvector-config
+                  key: service-url
+            - name: TELEMETRY_ENABLED
+              value: "true"

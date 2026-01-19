@@ -1,0 +1,33 @@
+{
+  "name": "@llm-shield/agents",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LLM-Shield Agent Implementations",
+  "type": "module",
+  "workspaces": [
+    "contracts",
+    "prompt-injection-detection",
+    "model-abuse-detection",
+    "content-moderation"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "build:contracts": "npm run build -w @llm-shield/agentics-contracts",
+    "build:agents": "npm run build -w @llm-shield/prompt-injection-detection",
+    "build:content-moderation": "npm run build -w @llm-shield/content-moderation-agent",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0",
+    "prettier": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

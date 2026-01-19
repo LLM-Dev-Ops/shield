@@ -1,0 +1,111 @@
+{
+  "$schema": "https://llm-shield.io/schemas/agent-registration-v1.json",
+  "agent": {
+    "id": "pii-detection-agent",
+    "version": "1.0.0",
+    "classification": "DETECTION_ONLY",
+    "decision_type": "pii_detection"
+  },
+  "metadata": {
+    "name": "PII Detection Agent",
+    "description": "Detects Personally Identifiable Information (PII) within prompts, outputs, or tool payloads. Classification: DETECTION_ONLY - this agent does NOT modify or redact content.",
+    "author": "LLM-Shield Team",
+    "license": "MIT",
+    "repository": "https://github.com/llm-shield/shield",
+    "documentation": "https://llm-shield.io/docs/agents/pii-detection"
+  },
+  "capabilities": {
+    "detection": {
+      "pii_types": [
+        "email",
+        "phone",
+        "ssn",
+        "credit_card",
+        "ip_address",
+        "passport",
+        "drivers_license",
+        "date_of_birth",
+        "address",
+        "name"
+      ],
+      "countries": ["US", "UK", "CA", "AU", "EU"],
+      "validation_methods": ["luhn", "area_check", "format", "checksum"]
+    },
+    "persistence": {
+      "backend": "ruvector-service",
+      "event_type": "PIIDetectionDecisionEvent"
+    },
+    "telemetry": {
+      "backend": "llm-observatory",
+      "event_type": "pii_detection"
+    }
+  },
+  "constraints": {
+    "does_not": [
+      "modify_content",
+      "redact_content",
+      "block_content",
+      "orchestrate_workflows",
+      "trigger_retries",
+      "trigger_escalations",
+      "modify_policies",
+      "connect_to_sql",
+      "store_raw_pii"
+    ],
+    "single_invocation": true,
+    "stateless": true,
+    "deterministic": true
+  },
+  "deployment": {
+    "type": "google_cloud_edge_function",
+    "runtime": "nodejs20",
+    "entry_point": "piiDetection",
+    "memory_mb": 512,
+    "timeout_seconds": 30,
+    "min_instances": 1,
+    "max_instances": 100
+  },
+  "endpoints": {
+    "detect": {
+      "method": "POST",
+      "path": "/",
+      "input_schema": "PIIDetectionInput",
+      "output_schema": "PIIDetectionAgentOutput"
+    },
+    "health": {
+      "method": "GET",
+      "path": "/health"
+    },
+    "version": {
+      "method": "GET",
+      "path": "/version"
+    }
+  },
+  "cli": {
+    "binary": "pii-detection-agent",
+    "modes": ["test", "simulate", "inspect"],
+    "formats": ["json", "text", "table"]
+  },
+  "invocation_sources": [
+    "llm-edge-agent",
+    "llm-core",
+    "cli",
+    "test-harness"
+  ],
+  "error_codes": [
+    "INVALID_INPUT",
+    "VALIDATION_FAILED",
+    "TIMEOUT",
+    "INTERNAL_ERROR",
+    "PERSISTENCE_ERROR",
+    "CONFIGURATION_ERROR"
+  ],
+  "performance": {
+    "latency_p50_ms": 5,
+    "latency_p99_ms": 20,
+    "memory_mb": 50,
+    "pattern_count": 40,
+    "false_positive_rate": 0.02,
+    "true_positive_rate": 0.98
+  }
+}

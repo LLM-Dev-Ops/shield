@@ -1,0 +1,40 @@
+{
+  "name": "@llm-shield/agentics-contracts",
+  "version": "1.0.0",
+  "description": "Schema definitions for LLM-Shield agents",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "keywords": [
+    "llm-shield",
+    "agentics",
+    "contracts",
+    "schemas",
+    "agents"
+  ],
+  "license": "MIT"
+}

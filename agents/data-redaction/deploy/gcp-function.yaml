@@ -1,0 +1,118 @@
+# Google Cloud Edge Function Configuration
+# Data Redaction Agent - LLM-Shield
+#
+# This configuration deploys the agent as a Cloud Function
+# that can be invoked by LLM-Edge-Agent and LLM-Core bundles.
+
+apiVersion: functions.googleapis.com/v1
+kind: Function
+metadata:
+  name: data-redaction-agent
+  labels:
+    app: llm-shield
+    component: agent
+    agent-type: data-redaction
+    classification: redaction
+spec:
+  # Runtime configuration
+  runtime: nodejs20
+  entryPoint: handleRequest
+  source:
+    sourceUploadUrl: ""  # Set during deployment
+
+  # Trigger configuration (HTTP)
+  httpsTrigger:
+    securityLevel: SECURE_ALWAYS
+    allowUnauthenticated: false
+
+  # Resource allocation
+  availableMemoryMb: 256
+  timeout: 30s
+  minInstances: 0
+  maxInstances: 100
+
+  # Environment variables
+  environmentVariables:
+    NODE_ENV: production
+    RUVECTOR_SERVICE_URL: ${RUVECTOR_SERVICE_URL}
+    TELEMETRY_ENABLED: "true"
+    OTEL_COLLECTOR_URL: ${OTEL_COLLECTOR_URL}
+
+  # Secret references (from Secret Manager)
+  secretEnvironmentVariables:
+    - key: RUVECTOR_API_KEY
+      projectId: ${PROJECT_ID}
+      secret: ruvector-api-key
+      version: latest
+
+  # VPC connector for internal services
+  vpcConnector: ${VPC_CONNECTOR}
+  vpcConnectorEgressSettings: PRIVATE_RANGES_ONLY
+
+  # IAM configuration
+  serviceAccountEmail: ${SERVICE_ACCOUNT}
+
+  # Ingress settings
+  ingressSettings: ALLOW_INTERNAL_AND_GCLB
+
+---
+# Cloud Run service (alternative deployment)
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: data-redaction-agent
+  namespace: llm-shield
+  labels:
+    app: llm-shield
+    component: agent
+    agent-type: data-redaction
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "100"
+        run.googleapis.com/cpu-throttling: "false"
+        run.googleapis.com/startup-cpu-boost: "true"
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 30
+      serviceAccountName: llm-shield-agent@${PROJECT_ID}.iam.gserviceaccount.com
+      containers:
+        - name: agent
+          image: gcr.io/${PROJECT_ID}/data-redaction-agent:${VERSION}
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: "8080"
+            - name: RUVECTOR_SERVICE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ruvector-config
+                  key: service-url
+            - name: RUVECTOR_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ruvector-config
+                  key: api-key
+            - name: TELEMETRY_ENABLED
+              value: "true"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5

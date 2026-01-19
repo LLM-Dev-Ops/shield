@@ -1,0 +1,73 @@
+{
+  "name": "@llm-shield/pii-detection-agent",
+  "version": "1.0.0",
+  "description": "PII Detection Agent for LLM-Shield - Detects Personally Identifiable Information in prompts, outputs, and tool payloads",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "pii-detection-agent": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./edge": {
+      "import": "./dist/edge-handler.js",
+      "types": "./dist/edge-handler.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "llm",
+    "security",
+    "pii",
+    "privacy",
+    "detection",
+    "agent",
+    "shield"
+  ],
+  "author": "LLM-Shield Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/llm-shield/shield.git",
+    "directory": "agents/pii-detection"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@llm-shield/agentics-contracts": "workspace:*",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@google-cloud/functions-framework": "^3.3.0",
+    "@types/node": "^20.10.0",
+    "@types/uuid": "^9.0.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "@google-cloud/functions-framework": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@google-cloud/functions-framework": {
+      "optional": true
+    }
+  },
+  "files": [
+    "dist",
+    "AGENT.md"
+  ]
+}

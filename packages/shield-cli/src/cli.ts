@@ -399,6 +399,221 @@ program
     process.exit(results.length > 0 ? 1 : 0);
   });
 
+// Data Redaction Agent commands
+const redactCommand = program
+  .command('redact')
+  .description('Data Redaction Agent - Detect and redact sensitive data (PII, secrets, credentials)');
+
+redactCommand
+  .command('test')
+  .description('Test redaction with sample content')
+  .argument('<content>', 'Content to redact')
+  .option('-s, --strategy <strategy>', 'Redaction strategy (mask, hash, pseudonymize, remove, partial_mask)', 'mask')
+  .option('--sensitivity <number>', 'Detection sensitivity (0.0-1.0)', '0.7')
+  .option('--pii-types <types>', 'PII types to detect (comma-separated)')
+  .option('--secret-types <types>', 'Secret types to detect (comma-separated)')
+  .option('-o, --output <format>', 'Output format (json, text)', 'text')
+  .option('-v, --verbose', 'Verbose output')
+  .action(async (content: string, options) => {
+    const spinner = ora('Performing redaction...').start();
+    try {
+      const result = await performRedaction(content, {
+        strategy: options.strategy,
+        sensitivity: parseFloat(options.sensitivity),
+        piiTypes: options.piiTypes?.split(','),
+        secretTypes: options.secretTypes?.split(','),
+      });
+      spinner.stop();
+
+      if (options.output === 'json') {
+        console.log(JSON.stringify(result, null, 2));
+      } else {
+        printRedactionResult(result, options.verbose);
+      }
+
+      process.exit(result.data_redacted ? 1 : 0);
+    } catch (error) {
+      spinner.fail('Redaction failed');
+      console.error(error);
+      process.exit(1);
+    }
+  });
+
+redactCommand
+  .command('simulate')
+  .description('Simulate redaction with custom configuration')
+  .argument('<content>', 'Content to redact')
+  .option('-s, --strategy <strategy>', 'Redaction strategy', 'mask')
+  .option('--sensitivity <number>', 'Detection sensitivity', '0.7')
+  .option('--min-confidence <number>', 'Minimum confidence threshold', '0.8')
+  .option('--pii-types <types>', 'PII types to detect')
+  .option('--secret-types <types>', 'Secret types to detect')
+  .option('--no-pii', 'Disable PII detection')
+  .option('--no-secrets', 'Disable secret detection')
+  .option('--no-credentials', 'Disable credential detection')
+  .option('-o, --output <format>', 'Output format (json, text)', 'json')
+  .action(async (content: string, options) => {
+    const result = await performRedaction(content, {
+      strategy: options.strategy,
+      sensitivity: parseFloat(options.sensitivity),
+      minConfidence: parseFloat(options.minConfidence),
+      piiTypes: options.piiTypes?.split(','),
+      secretTypes: options.secretTypes?.split(','),
+      detectPii: options.pii !== false,
+      detectSecrets: options.secrets !== false,
+      detectCredentials: options.credentials !== false,
+    });
+
+    if (options.output === 'json') {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      printRedactionResult(result, true);
+    }
+  });
+
+// Redaction helper functions
+interface RedactionOptions {
+  strategy?: string;
+  sensitivity?: number;
+  minConfidence?: number;
+  piiTypes?: string[];
+  secretTypes?: string[];
+  detectPii?: boolean;
+  detectSecrets?: boolean;
+  detectCredentials?: boolean;
+}
+
+interface RedactionResult {
+  data_redacted: boolean;
+  redaction_count: number;
+  original_risk_score: number;
+  severity: string;
+  confidence: number;
+  redacted_content: string;
+  detected_categories: string[];
+  entities: Array<{
+    type: string;
+    category: string;
+    severity: string;
+    placeholder: string;
+  }>;
+}
+
+async function performRedaction(content: string, options: RedactionOptions): Promise<RedactionResult> {
+  // Import patterns from embedded definitions (same as in agents/data-redaction)
+  const piiPatterns = [
+    { pattern: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, type: 'email', severity: 'medium' },
+    { pattern: /\b(?:\+?1[-.\s]?)?\(?[2-9]\d{2}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g, type: 'phone', severity: 'medium' },
+    { pattern: /\b\d{3}-\d{2}-\d{4}\b/g, type: 'ssn', severity: 'critical' },
+    { pattern: /\b4[0-9]{12}(?:[0-9]{3})?\b/g, type: 'credit_card', severity: 'critical' },
+    { pattern: /\b5[1-5][0-9]{14}\b/g, type: 'credit_card', severity: 'critical' },
+  ];
+
+  const secretPatterns = [
+    { pattern: /AKIA[0-9A-Z]{16}/g, type: 'aws_key', severity: 'critical' },
+    { pattern: /ghp_[a-zA-Z0-9]{36}/g, type: 'github_token', severity: 'high' },
+    { pattern: /sk-[a-zA-Z0-9]{48}/g, type: 'openai_key', severity: 'high' },
+    { pattern: /sk-ant-[a-zA-Z0-9-]{32,}/g, type: 'anthropic_key', severity: 'high' },
+    { pattern: /sk_live_[0-9a-zA-Z]{24,}/g, type: 'stripe_key', severity: 'critical' },
+    { pattern: /-----BEGIN (RSA |EC )?PRIVATE KEY-----/g, type: 'private_key', severity: 'critical' },
+  ];
+
+  const credentialPatterns = [
+    { pattern: /password["']?\s*[:=]\s*["']?[^\s'"]{8,}/gi, type: 'password', severity: 'high' },
+    { pattern: /postgres(?:ql)?:\/\/[^:]+:[^@]+@[^/]+\/[^\s'"]+/gi, type: 'database_url', severity: 'critical' },
+  ];
+
+  const patterns = [
+    ...(options.detectPii !== false ? piiPatterns : []),
+    ...(options.detectSecrets !== false ? secretPatterns : []),
+    ...(options.detectCredentials !== false ? credentialPatterns : []),
+  ];
+
+  let redactedContent = content;
+  const entities: Array<{ type: string; category: string; severity: string; placeholder: string }> = [];
+  const detectedCategories = new Set<string>();
+
+  for (const { pattern, type, severity } of patterns) {
+    const regex = new RegExp(pattern.source, pattern.flags);
+    let match;
+
+    while ((match = regex.exec(content)) !== null) {
+      const placeholder = getPlaceholder(match[0], type, options.strategy || 'mask');
+      redactedContent = redactedContent.replace(match[0], placeholder);
+
+      const category = piiPatterns.some(p => p.type === type) ? 'pii'
+        : secretPatterns.some(p => p.type === type) ? 'secret'
+        : 'credential';
+
+      entities.push({ type, category, severity, placeholder });
+      detectedCategories.add(category);
+    }
+  }
+
+  const maxSeverity = entities.reduce((max, e) => {
+    const order = ['low', 'medium', 'high', 'critical'];
+    return order.indexOf(e.severity) > order.indexOf(max) ? e.severity : max;
+  }, 'low');
+
+  return {
+    data_redacted: entities.length > 0,
+    redaction_count: entities.length,
+    original_risk_score: entities.length > 0 ? Math.min(1, entities.length * 0.2) : 0,
+    severity: entities.length > 0 ? maxSeverity : 'none',
+    confidence: 0.95,
+    redacted_content: redactedContent,
+    detected_categories: Array.from(detectedCategories),
+    entities,
+  };
+}
+
+function getPlaceholder(value: string, type: string, strategy: string): string {
+  switch (strategy) {
+    case 'mask':
+      return `[${type.toUpperCase()}]`;
+    case 'hash':
+      return `[HASH:${value.substring(0, 8)}...]`;
+    case 'remove':
+      return '';
+    case 'partial_mask':
+      if (value.length <= 8) return '*'.repeat(value.length);
+      return value.substring(0, 4) + '*'.repeat(value.length - 8) + value.substring(value.length - 4);
+    case 'pseudonymize':
+      return `[REDACTED-${type}]`;
+    default:
+      return `[${type.toUpperCase()}]`;
+  }
+}
+
+function printRedactionResult(result: RedactionResult, verbose?: boolean): void {
+  const severityColors: Record<string, (s: string) => string> = {
+    critical: chalk.bgRed.white,
+    high: chalk.red,
+    medium: chalk.yellow,
+    low: chalk.blue,
+    none: chalk.green,
+  };
+
+  console.log(chalk.bold('\n🔒 Data Redaction Result\n'));
+  console.log(`  Data Redacted: ${result.data_redacted ? chalk.red('Yes') : chalk.green('No')}`);
+  console.log(`  Redaction Count: ${result.redaction_count}`);
+  console.log(`  Severity: ${severityColors[result.severity](result.severity.toUpperCase())}`);
+  console.log(`  Risk Score: ${(result.original_risk_score * 100).toFixed(1)}%`);
+  console.log(`  Categories: ${result.detected_categories.join(', ') || 'none'}`);
+
+  if (verbose && result.entities.length > 0) {
+    console.log('\n  Redacted Entities:');
+    result.entities.forEach(entity => {
+      const color = severityColors[entity.severity] || chalk.white;
+      console.log(`    - ${entity.type} (${entity.category}): ${color(entity.placeholder)}`);
+    });
+  }
+
+  console.log('\n  Redacted Content:');
+  console.log(chalk.gray('  ' + result.redacted_content));
+  console.log('');
+}
+
 program
   .command('version')
   .description('Show version information')

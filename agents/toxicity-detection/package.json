@@ -1,0 +1,62 @@
+{
+  "name": "@llm-shield/toxicity-detection",
+  "version": "1.0.0",
+  "description": "Toxicity Detection Agent for LLM-Shield - detects abusive, hateful, or toxic language",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "shield-agent-toxicity": "dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./handler": {
+      "import": "./dist/handler.js",
+      "types": "./dist/handler.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "llm-shield",
+    "toxicity-detection",
+    "content-moderation",
+    "safety",
+    "ai-safety",
+    "hate-speech",
+    "threat-detection"
+  ],
+  "author": "LLM-Shield Team",
+  "license": "MIT",
+  "dependencies": {
+    "@llm-shield/agentics-contracts": "workspace:*",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/uuid": "^9.0.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "@llm-shield/agentics-contracts": ">=1.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "dist",
+    "AGENT.md",
+    "README.md"
+  ]
+}

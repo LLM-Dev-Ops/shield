@@ -1,0 +1,60 @@
+{
+  "name": "@llm-shield/prompt-injection-detection",
+  "version": "1.0.0",
+  "description": "Prompt Injection Detection Agent for LLM-Shield",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./handler": {
+      "import": "./dist/handler.js",
+      "types": "./dist/handler.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rm -rf dist",
+    "cli:test": "node --loader ts-node/esm src/cli.ts test",
+    "cli:simulate": "node --loader ts-node/esm src/cli.ts simulate",
+    "cli:inspect": "node --loader ts-node/esm src/cli.ts inspect"
+  },
+  "dependencies": {
+    "@llm-shield/agentics-contracts": "file:../contracts",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "dist",
+    "src",
+    "AGENT.md"
+  ],
+  "keywords": [
+    "llm-shield",
+    "prompt-injection",
+    "detection",
+    "security",
+    "llm",
+    "agent"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/llm-dev-ops/shield.git",
+    "directory": "agents/prompt-injection-detection"
+  }
+}
