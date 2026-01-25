@@ -1,0 +1,54 @@
+{
+  "name": "@llm-shield/lib",
+  "version": "1.0.0",
+  "description": "Shared infrastructure for LLM-Shield agents - Phase 1 / Layer 1",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./startup-validator": {
+      "import": "./dist/startup-validator.js",
+      "types": "./dist/startup-validator.d.ts"
+    },
+    "./performance-boundaries": {
+      "import": "./dist/performance-boundaries.js",
+      "types": "./dist/performance-boundaries.d.ts"
+    },
+    "./decision-event": {
+      "import": "./dist/decision-event.js",
+      "types": "./dist/decision-event.d.ts"
+    },
+    "./read-cache": {
+      "import": "./dist/read-cache.js",
+      "types": "./dist/read-cache.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "llm-shield",
+    "infrastructure",
+    "startup",
+    "validation",
+    "performance",
+    "caching"
+  ],
+  "author": "LLM-Shield Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0"
+  }
+}

@@ -1,7 +1,7 @@
 {
   "name": "@llm-shield/service",
   "version": "1.0.0",
-  "description": "LLM-Shield Unified Service - Google Cloud Run",
+  "description": "LLM-Shield Unified Service - Google Cloud Run (HARDENED)",
   "type": "module",
   "main": "./dist/index.js",
   "scripts": {
@@ -12,6 +12,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@llm-shield/lib": "file:../lib",
     "@llm-shield/agentics-contracts": "file:../contracts",
     "@llm-shield/prompt-injection-detection": "file:../prompt-injection-detection",
     "@llm-shield/pii-detection": "file:../pii-detection",

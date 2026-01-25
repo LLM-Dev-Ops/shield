@@ -2,35 +2,45 @@
  * @module llm-shield-service
  * @description Unified LLM-Shield Service - Google Cloud Run Entry Point
  *
- * This is the single unified service that exposes all 9 LLM-Shield detection agents.
- * All agents are deployed as part of this ONE service - no standalone deployments.
+ * Phase 1 / Layer 1 - Foundational Tooling
  *
- * Architecture:
- * - Stateless HTTP service
- * - All persistence via ruvector-service (NO direct SQL access)
- * - Telemetry to LLM-Observatory
- * - Environment-based configuration
+ * HARDENING REQUIREMENTS IMPLEMENTED:
+ * 1. Mandatory startup validation (env vars, Ruvector health)
+ * 2. Agent identity standardization (source_agent, domain, phase, layer)
+ * 3. Performance boundaries (MAX_TOKENS, MAX_LATENCY_MS, MAX_CALLS_PER_RUN)
+ * 4. Read-only caching (TTL 30-60s)
+ * 5. Minimal observability (agent_started, decision_event_emitted, agent_abort)
+ * 6. Contract assertions (Ruvector required, ≥1 DecisionEvent per run)
  *
- * Agents Exposed:
- * 1. Prompt Injection Detection Agent
- * 2. PII Detection Agent
- * 3. Data Redaction Agent
- * 4. Secrets Leakage Detection Agent
- * 5. Toxicity Detection Agent
- * 6. Safety Boundary Agent
- * 7. Content Moderation Agent
- * 8. Model Abuse Detection Agent
- * 9. Credential Exposure Detection Agent
+ * CRITICAL:
+ * - Ruvector is REQUIRED - service crashes if unavailable
+ * - All secrets from Google Secret Manager (no inline secrets)
+ * - Startup failures crash the container immediately
  */
 
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { URL } from 'url';
+import {
+  assertStartupRequirements,
+  getAgentIdentity,
+  structuredLog,
+  type AgentIdentityContext,
+  PerformanceTracker,
+  PERFORMANCE_LIMITS,
+  checkTokenLimit,
+  PerformanceBoundaryError,
+  startCacheCleanup,
+  stopCacheCleanup,
+  ruvectorHealthCache,
+  getOrCompute,
+  createCacheKey,
+} from '@llm-shield/lib';
 
 // =============================================================================
 // SERVICE CONFIGURATION
 // =============================================================================
 
-const SERVICE_NAME = process.env.SERVICE_NAME || 'llm-shield';
+const SERVICE_NAME = process.env.SERVICE_NAME || process.env.AGENT_NAME || 'llm-shield';
 const SERVICE_VERSION = process.env.SERVICE_VERSION || '1.0.0';
 const PORT = parseInt(process.env.PORT || '8080', 10);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -45,6 +55,7 @@ interface EdgeRequest {
   headers: Record<string, string>;
   body?: unknown;
   json(): Promise<unknown>;
+  performanceTracker?: PerformanceTracker;
 }
 
 interface EdgeResponse {
@@ -69,7 +80,7 @@ async function loadHandlers(): Promise<Map<string, EdgeHandler>> {
   // 1. Prompt Injection Detection - exports { handler }
   try {
     const mod = await import('../../prompt-injection-detection/dist/handler.js');
-    handlers.set('prompt-injection', mod.handler);
+    handlers.set('prompt-injection', wrapHandler(mod.handler, 'prompt-injection'));
     console.log(`[${SERVICE_NAME}] Loaded: prompt-injection-detection`);
   } catch (e) {
     console.error(`[${SERVICE_NAME}] Failed to load prompt-injection-detection:`, e);
@@ -82,15 +93,11 @@ async function loadHandlers(): Promise<Map<string, EdgeHandler>> {
       ruvectorServiceUrl: process.env.RUVECTOR_SERVICE_URL,
       telemetryEndpoint: process.env.TELEMETRY_ENDPOINT,
     });
-    handlers.set('pii', async (req: EdgeRequest): Promise<EdgeResponse> => {
-      try {
-        const input = await req.json();
-        const result = await agent.detect(input as any);
-        return { status: 200, headers: { 'Content-Type': 'application/json' }, body: result };
-      } catch (e: any) {
-        return { status: 500, headers: { 'Content-Type': 'application/json' }, body: { error: e.message } };
-      }
-    });
+    handlers.set('pii', wrapHandler(async (req: EdgeRequest): Promise<EdgeResponse> => {
+      const input = await req.json();
+      const result = await agent.detect(input as any);
+      return { status: 200, headers: { 'Content-Type': 'application/json' }, body: result };
+    }, 'pii'));
     console.log(`[${SERVICE_NAME}] Loaded: pii-detection`);
   } catch (e) {
     console.error(`[${SERVICE_NAME}] Failed to load pii-detection:`, e);
@@ -99,22 +106,17 @@ async function loadHandlers(): Promise<Map<string, EdgeHandler>> {
   // 3. Data Redaction - exports handleRequest
   try {
     const mod = await import('../../data-redaction/dist/index.js');
-    handlers.set('redaction', async (req: EdgeRequest): Promise<EdgeResponse> => {
-      try {
-        const input = await req.json();
-        // Create a minimal Request-like object
-        const request = new Request('http://localhost', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(input),
-        });
-        const response = await mod.handleRequest(request);
-        const body = await response.json();
-        return { status: response.status, headers: { 'Content-Type': 'application/json' }, body };
-      } catch (e: any) {
-        return { status: 500, headers: { 'Content-Type': 'application/json' }, body: { error: e.message } };
-      }
-    });
+    handlers.set('redaction', wrapHandler(async (req: EdgeRequest): Promise<EdgeResponse> => {
+      const input = await req.json();
+      const request = new Request('http://localhost', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      });
+      const response = await mod.handleRequest(request);
+      const body = await response.json();
+      return { status: response.status, headers: { 'Content-Type': 'application/json' }, body };
+    }, 'redaction'));
     console.log(`[${SERVICE_NAME}] Loaded: data-redaction`);
   } catch (e) {
     console.error(`[${SERVICE_NAME}] Failed to load data-redaction:`, e);
@@ -125,15 +127,11 @@ async function loadHandlers(): Promise<Map<string, EdgeHandler>> {
     const mod = await import('../../secrets-leakage-detection/dist/handler.js');
     const edgeHandler = mod.default || mod.edgeHandler;
     if (edgeHandler && typeof edgeHandler.detect === 'function') {
-      handlers.set('secrets', async (req: EdgeRequest): Promise<EdgeResponse> => {
-        try {
-          const input = await req.json();
-          const result = await edgeHandler.detect(input);
-          return { status: 200, headers: { 'Content-Type': 'application/json' }, body: result };
-        } catch (e: any) {
-          return { status: 500, headers: { 'Content-Type': 'application/json' }, body: { error: e.message } };
-        }
-      });
+      handlers.set('secrets', wrapHandler(async (req: EdgeRequest): Promise<EdgeResponse> => {
+        const input = await req.json();
+        const result = await edgeHandler.detect(input);
+        return { status: 200, headers: { 'Content-Type': 'application/json' }, body: result };
+      }, 'secrets'));
       console.log(`[${SERVICE_NAME}] Loaded: secrets-leakage-detection`);
     }
   } catch (e) {
@@ -147,15 +145,11 @@ async function loadHandlers(): Promise<Map<string, EdgeHandler>> {
       ruvectorServiceUrl: process.env.RUVECTOR_SERVICE_URL,
       telemetryEndpoint: process.env.TELEMETRY_ENDPOINT,
     });
-    handlers.set('toxicity', async (req: EdgeRequest): Promise<EdgeResponse> => {
-      try {
-        const input = await req.json();
-        const result = await agent.detect(input as any);
-        return { status: 200, headers: { 'Content-Type': 'application/json' }, body: result };
-      } catch (e: any) {
-        return { status: 500, headers: { 'Content-Type': 'application/json' }, body: { error: e.message } };
-      }
-    });
+    handlers.set('toxicity', wrapHandler(async (req: EdgeRequest): Promise<EdgeResponse> => {
+      const input = await req.json();
+      const result = await agent.detect(input as any);
+      return { status: 200, headers: { 'Content-Type': 'application/json' }, body: result };
+    }, 'toxicity'));
     console.log(`[${SERVICE_NAME}] Loaded: toxicity-detection`);
   } catch (e) {
     console.error(`[${SERVICE_NAME}] Failed to load toxicity-detection:`, e);
@@ -164,7 +158,7 @@ async function loadHandlers(): Promise<Map<string, EdgeHandler>> {
   // 6. Safety Boundary - exports { handler }
   try {
     const mod = await import('../../safety-boundary/dist/handler.js');
-    handlers.set('safety', mod.handler);
+    handlers.set('safety', wrapHandler(mod.handler, 'safety'));
     console.log(`[${SERVICE_NAME}] Loaded: safety-boundary`);
   } catch (e) {
     console.error(`[${SERVICE_NAME}] Failed to load safety-boundary:`, e);
@@ -173,7 +167,7 @@ async function loadHandlers(): Promise<Map<string, EdgeHandler>> {
   // 7. Content Moderation - exports { handler }
   try {
     const mod = await import('../../content-moderation/dist/handler.js');
-    handlers.set('moderation', mod.handler);
+    handlers.set('moderation', wrapHandler(mod.handler, 'moderation'));
     console.log(`[${SERVICE_NAME}] Loaded: content-moderation`);
   } catch (e) {
     console.error(`[${SERVICE_NAME}] Failed to load content-moderation:`, e);
@@ -184,15 +178,11 @@ async function loadHandlers(): Promise<Map<string, EdgeHandler>> {
     const mod = await import('../../model-abuse-detection/dist/handler.js');
     const edgeHandler = mod.default || mod.edgeHandler;
     if (edgeHandler && typeof edgeHandler.detect === 'function') {
-      handlers.set('abuse', async (req: EdgeRequest): Promise<EdgeResponse> => {
-        try {
-          const input = await req.json();
-          const result = await edgeHandler.detect(input);
-          return { status: 200, headers: { 'Content-Type': 'application/json' }, body: result };
-        } catch (e: any) {
-          return { status: 500, headers: { 'Content-Type': 'application/json' }, body: { error: e.message } };
-        }
-      });
+      handlers.set('abuse', wrapHandler(async (req: EdgeRequest): Promise<EdgeResponse> => {
+        const input = await req.json();
+        const result = await edgeHandler.detect(input);
+        return { status: 200, headers: { 'Content-Type': 'application/json' }, body: result };
+      }, 'abuse'));
       console.log(`[${SERVICE_NAME}] Loaded: model-abuse-detection`);
     }
   } catch (e) {
@@ -204,15 +194,11 @@ async function loadHandlers(): Promise<Map<string, EdgeHandler>> {
     const mod = await import('../../credential-exposure-detection/dist/handler.js');
     const edgeHandler = mod.default || mod.edgeHandler;
     if (edgeHandler && typeof edgeHandler.detect === 'function') {
-      handlers.set('credentials', async (req: EdgeRequest): Promise<EdgeResponse> => {
-        try {
-          const input = await req.json();
-          const result = await edgeHandler.detect(input);
-          return { status: 200, headers: { 'Content-Type': 'application/json' }, body: result };
-        } catch (e: any) {
-          return { status: 500, headers: { 'Content-Type': 'application/json' }, body: { error: e.message } };
-        }
-      });
+      handlers.set('credentials', wrapHandler(async (req: EdgeRequest): Promise<EdgeResponse> => {
+        const input = await req.json();
+        const result = await edgeHandler.detect(input);
+        return { status: 200, headers: { 'Content-Type': 'application/json' }, body: result };
+      }, 'credentials'));
       console.log(`[${SERVICE_NAME}] Loaded: credential-exposure-detection`);
     }
   } catch (e) {
@@ -220,6 +206,52 @@ async function loadHandlers(): Promise<Map<string, EdgeHandler>> {
   }
 
   return handlers;
+}
+
+/**
+ * Wrap handler with performance boundaries
+ */
+function wrapHandler(handler: EdgeHandler, agentKey: string): EdgeHandler {
+  return async (req: EdgeRequest): Promise<EdgeResponse> => {
+    const executionRef = `${agentKey}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const tracker = new PerformanceTracker(executionRef);
+
+    try {
+      // Check token limit if body contains content
+      if (req.body && typeof req.body === 'object') {
+        const body = req.body as Record<string, unknown>;
+        if (typeof body.content === 'string') {
+          const tokenCheck = checkTokenLimit(body.content);
+          if (!tokenCheck.valid) {
+            tracker.trackTokens(tokenCheck.tokenCount); // Will throw
+          }
+        }
+      }
+
+      // Execute handler
+      const result = await handler({ ...req, performanceTracker: tracker });
+
+      // Check latency
+      tracker.checkLatency();
+
+      return result;
+    } catch (error) {
+      if (error instanceof PerformanceBoundaryError) {
+        return {
+          status: 429,
+          headers: { 'Content-Type': 'application/json' },
+          body: {
+            error: 'Performance Boundary Exceeded',
+            type: error.violation.type,
+            limit: error.violation.limit,
+            actual: error.violation.actual,
+            message: error.violation.message,
+          },
+        };
+      }
+      throw error;
+    }
+  };
 }
 
 // =============================================================================
@@ -288,10 +320,22 @@ async function toEdgeRequest(req: IncomingMessage, parsedUrl: URL): Promise<Edge
 }
 
 function sendJson(res: ServerResponse, data: unknown, status = 200, headers: Record<string, string> = {}): void {
+  let identity: AgentIdentityContext | null = null;
+  try {
+    identity = getAgentIdentity();
+  } catch {
+    // Identity not available yet
+  }
+
   res.writeHead(status, {
     'Content-Type': 'application/json',
     'X-Service-Name': SERVICE_NAME,
     'X-Service-Version': SERVICE_VERSION,
+    ...(identity && {
+      'X-Agent-Domain': identity.domain,
+      'X-Agent-Phase': identity.phase,
+      'X-Agent-Layer': identity.layer,
+    }),
     ...headers,
   });
   res.end(JSON.stringify(data));
@@ -301,14 +345,48 @@ function sendJson(res: ServerResponse, data: unknown, status = 200, headers: Rec
 // REQUEST HANDLERS
 // =============================================================================
 
-function handleHealth(res: ServerResponse, handlers: Map<string, EdgeHandler>): void {
+async function handleHealth(res: ServerResponse, handlers: Map<string, EdgeHandler>): Promise<void> {
+  // Check Ruvector health with caching
+  const ruvectorHealthy = await getOrCompute(
+    ruvectorHealthCache,
+    createCacheKey('ruvector', 'health'),
+    async () => {
+      try {
+        const response = await fetch(`${process.env.RUVECTOR_SERVICE_URL}/health`, {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${process.env.RUVECTOR_API_KEY}` },
+          signal: AbortSignal.timeout(2000),
+        });
+        return response.ok;
+      } catch {
+        return false;
+      }
+    }
+  );
+
+  let identity: AgentIdentityContext | null = null;
+  try {
+    identity = getAgentIdentity();
+  } catch {
+    // Identity not available
+  }
+
   sendJson(res, {
-    status: 'healthy',
+    status: ruvectorHealthy ? 'healthy' : 'degraded',
     service: SERVICE_NAME,
     version: SERVICE_VERSION,
     timestamp: new Date().toISOString(),
+    identity: identity ? {
+      agent_name: identity.agent_name,
+      domain: identity.domain,
+      phase: identity.phase,
+      layer: identity.layer,
+    } : null,
     environment: process.env.PLATFORM_ENV || 'development',
     agents_loaded: handlers.size,
+    ruvector_required: true,
+    ruvector_healthy: ruvectorHealthy,
+    performance_limits: PERFORMANCE_LIMITS,
     agents: AGENT_REGISTRY.map(a => ({
       name: a.name,
       path: a.path,
@@ -319,11 +397,30 @@ function handleHealth(res: ServerResponse, handlers: Map<string, EdgeHandler>): 
 }
 
 function handleInfo(res: ServerResponse, handlers: Map<string, EdgeHandler>): void {
+  let identity: AgentIdentityContext | null = null;
+  try {
+    identity = getAgentIdentity();
+  } catch {
+    // Identity not available
+  }
+
   sendJson(res, {
     service: SERVICE_NAME,
     version: SERVICE_VERSION,
-    description: 'LLM-Shield Unified Security Service',
+    description: 'LLM-Shield Unified Security Service - Phase 1 / Layer 1',
+    identity: identity ? {
+      agent_name: identity.agent_name,
+      domain: identity.domain,
+      phase: identity.phase,
+      layer: identity.layer,
+    } : null,
     environment: process.env.PLATFORM_ENV || 'development',
+    hardening: {
+      ruvector_required: true,
+      performance_limits: PERFORMANCE_LIMITS,
+      caching_enabled: true,
+      cache_ttl_seconds: 30,
+    },
     agents: AGENT_REGISTRY.map(a => ({
       name: a.name,
       path: a.path,
@@ -342,12 +439,41 @@ function handleInfo(res: ServerResponse, handlers: Map<string, EdgeHandler>): vo
   });
 }
 
-function handleReady(res: ServerResponse, handlers: Map<string, EdgeHandler>): void {
+async function handleReady(res: ServerResponse, handlers: Map<string, EdgeHandler>): Promise<void> {
   const isReady = handlers.size > 0;
-  if (isReady) {
-    sendJson(res, { ready: true, agents_loaded: handlers.size, timestamp: new Date().toISOString() });
+
+  // Also check Ruvector for full readiness
+  const ruvectorHealthy = await getOrCompute(
+    ruvectorHealthCache,
+    createCacheKey('ruvector', 'health'),
+    async () => {
+      try {
+        const response = await fetch(`${process.env.RUVECTOR_SERVICE_URL}/health`, {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${process.env.RUVECTOR_API_KEY}` },
+          signal: AbortSignal.timeout(2000),
+        });
+        return response.ok;
+      } catch {
+        return false;
+      }
+    }
+  );
+
+  if (isReady && ruvectorHealthy) {
+    sendJson(res, {
+      ready: true,
+      agents_loaded: handlers.size,
+      ruvector_healthy: true,
+      timestamp: new Date().toISOString(),
+    });
   } else {
-    sendJson(res, { ready: false, reason: 'No agents loaded' }, 503);
+    sendJson(res, {
+      ready: false,
+      reason: !isReady ? 'No agents loaded' : 'Ruvector not healthy',
+      agents_loaded: handlers.size,
+      ruvector_healthy: ruvectorHealthy,
+    }, 503);
   }
 }
 
@@ -388,6 +514,20 @@ async function routeToAgent(
     sendJson(res, edgeRes.body, edgeRes.status, edgeRes.headers);
   } catch (error) {
     console.error(`[${SERVICE_NAME}] Agent error (${agent.name}):`, error);
+
+    // Log abort for performance errors
+    if (error instanceof PerformanceBoundaryError) {
+      try {
+        const identity = getAgentIdentity();
+        structuredLog('agent_abort', `Performance boundary exceeded in ${agent.name}`, identity, {
+          agent: agent.name,
+          violation: error.violation,
+        });
+      } catch {
+        // Identity not available
+      }
+    }
+
     sendJson(res, {
       error: 'Internal Server Error',
       message: error instanceof Error ? error.message : 'Unknown error',
@@ -401,10 +541,41 @@ async function routeToAgent(
 // =============================================================================
 
 async function startServer(): Promise<void> {
+  // ==========================================================================
+  // MANDATORY STARTUP VALIDATION
+  // ==========================================================================
+  // This MUST be the first thing that happens.
+  // If validation fails, the service WILL crash.
+  // This is intentional - Ruvector is REQUIRED.
+  // ==========================================================================
+
+  console.log(`[${SERVICE_NAME}] Starting mandatory startup validation...`);
+
+  let identity: AgentIdentityContext;
+  try {
+    identity = await assertStartupRequirements();
+  } catch (error) {
+    // assertStartupRequirements already calls process.exit(1)
+    // This catch is just for TypeScript
+    console.error('Startup validation failed:', error);
+    process.exit(1);
+  }
+
+  console.log(`[${SERVICE_NAME}] Startup validation passed`);
+  console.log(`[${SERVICE_NAME}]   Agent: ${identity.agent_name}`);
+  console.log(`[${SERVICE_NAME}]   Domain: ${identity.domain}`);
+  console.log(`[${SERVICE_NAME}]   Phase: ${identity.phase}`);
+  console.log(`[${SERVICE_NAME}]   Layer: ${identity.layer}`);
+
+  // Start cache cleanup
+  startCacheCleanup();
+
+  // Load agent handlers
   console.log(`[${SERVICE_NAME}] Loading agent handlers...`);
   const handlers = await loadHandlers();
   console.log(`[${SERVICE_NAME}] Loaded ${handlers.size}/${AGENT_REGISTRY.length} agents`);
 
+  // Create HTTP server
   const server = createServer(async (req, res) => {
     const parsedUrl = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
     const path = parsedUrl.pathname;
@@ -427,11 +598,11 @@ async function startServer(): Promise<void> {
           handleInfo(res, handlers);
           break;
         case '/health':
-          handleHealth(res, handlers);
+          await handleHealth(res, handlers);
           break;
         case '/ready':
         case '/readiness':
-          handleReady(res, handlers);
+          await handleReady(res, handlers);
           break;
         default:
           await routeToAgent(req, res, parsedUrl, handlers);
@@ -448,35 +619,62 @@ async function startServer(): Promise<void> {
   server.listen(PORT, HOST, () => {
     console.log(`
 ╔══════════════════════════════════════════════════════════════════╗
-║                    LLM-SHIELD UNIFIED SERVICE                    ║
+║           LLM-SHIELD UNIFIED SERVICE (HARDENED)                  ║
 ╠══════════════════════════════════════════════════════════════════╣
 ║  Service: ${SERVICE_NAME.padEnd(53)}║
 ║  Version: ${SERVICE_VERSION.padEnd(53)}║
+║  Domain: ${identity.domain.padEnd(54)}║
+║  Phase: ${identity.phase.padEnd(55)}║
+║  Layer: ${identity.layer.padEnd(55)}║
 ║  Environment: ${(process.env.PLATFORM_ENV || 'development').padEnd(49)}║
 ║  Listening: http://${HOST}:${PORT}${' '.repeat(42 - HOST.length - String(PORT).length)}║
+╠══════════════════════════════════════════════════════════════════╣
+║  HARDENING STATUS:                                               ║
+║    ✓ Ruvector Required: YES                                      ║
+║    ✓ Startup Validation: PASSED                                  ║
+║    ✓ Performance Limits: ACTIVE                                  ║
+║    ✓ Read-Only Caching: ENABLED                                  ║
+║    ✓ Minimal Logging: ENABLED                                    ║
+╠══════════════════════════════════════════════════════════════════╣
+║  Performance Limits:                                             ║
+║    MAX_TOKENS: ${String(PERFORMANCE_LIMITS.MAX_TOKENS).padEnd(48)}║
+║    MAX_LATENCY_MS: ${String(PERFORMANCE_LIMITS.MAX_LATENCY_MS).padEnd(44)}║
+║    MAX_CALLS_PER_RUN: ${String(PERFORMANCE_LIMITS.MAX_CALLS_PER_RUN).padEnd(41)}║
 ╠══════════════════════════════════════════════════════════════════╣
 ║  Agents Loaded: ${String(handlers.size).padEnd(51)}║
 ${AGENT_REGISTRY.map(a => `║    ${handlers.has(a.key) ? '✓' : '✗'} ${a.name.padEnd(57)}║`).join('\n')}
 ╚══════════════════════════════════════════════════════════════════╝
 `);
+
+    // Log agent_started event
+    structuredLog('agent_started', 'LLM-Shield service started successfully', identity, {
+      agents_loaded: handlers.size,
+      port: PORT,
+      host: HOST,
+    });
   });
 
   // Graceful shutdown
-  process.on('SIGTERM', () => {
-    console.log(`[${SERVICE_NAME}] SIGTERM received, shutting down...`);
-    server.close(() => {
-      console.log(`[${SERVICE_NAME}] Server closed`);
-      process.exit(0);
-    });
-  });
+  const shutdown = (signal: string) => {
+    console.log(`[${SERVICE_NAME}] ${signal} received, shutting down...`);
 
-  process.on('SIGINT', () => {
-    console.log(`[${SERVICE_NAME}] SIGINT received, shutting down...`);
+    // Stop cache cleanup
+    stopCacheCleanup();
+
     server.close(() => {
       console.log(`[${SERVICE_NAME}] Server closed`);
       process.exit(0);
     });
-  });
+
+    // Force exit after 10s
+    setTimeout(() => {
+      console.error(`[${SERVICE_NAME}] Forced exit after timeout`);
+      process.exit(1);
+    }, 10000);
+  };
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 }
 
 // Start if run directly
