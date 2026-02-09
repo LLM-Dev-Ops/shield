@@ -34,6 +34,16 @@ import {
   ruvectorHealthCache,
   getOrCompute,
   createCacheKey,
+  validateExecutionContext,
+  createRepoSpan,
+  createAgentSpan,
+  attachArtifact,
+  completeSpan,
+  failSpan,
+  finalizeRepoSpan,
+  type ExecutionContext,
+  type ExecutionSpan,
+  type ExecutionOutput,
 } from '@llm-shield/lib';
 
 // =============================================================================
@@ -300,6 +310,10 @@ async function parseBody(req: IncomingMessage): Promise<unknown> {
 
 async function toEdgeRequest(req: IncomingMessage, parsedUrl: URL): Promise<EdgeRequest> {
   const body = await parseBody(req);
+  return toEdgeRequestFromBody(req, parsedUrl, body);
+}
+
+function toEdgeRequestFromBody(req: IncomingMessage, parsedUrl: URL, body: unknown): EdgeRequest {
   const headers: Record<string, string> = {};
 
   for (const [key, value] of Object.entries(req.headers)) {
@@ -339,6 +353,35 @@ function sendJson(res: ServerResponse, data: unknown, status = 200, headers: Rec
     ...headers,
   });
   res.end(JSON.stringify(data));
+}
+
+// =============================================================================
+// EXECUTION CONTEXT EXTRACTION
+// =============================================================================
+
+/**
+ * Extract execution context from request body or headers.
+ *
+ * The Agentics Core provides execution_id and parent_span_id.
+ * These are required for all agent dispatch operations.
+ * Body fields take precedence over headers.
+ */
+function extractExecutionContext(
+  body: unknown,
+  headers: Record<string, string>,
+): ExecutionContext {
+  const bodyObj = body && typeof body === 'object' ? body as Record<string, unknown> : {};
+
+  const execution_id =
+    (typeof bodyObj.execution_id === 'string' ? bodyObj.execution_id : '') ||
+    headers['x-execution-id'] ||
+    '';
+  const parent_span_id =
+    (typeof bodyObj.parent_span_id === 'string' ? bodyObj.parent_span_id : '') ||
+    headers['x-parent-span-id'] ||
+    '';
+
+  return validateExecutionContext({ execution_id, parent_span_id });
 }
 
 // =============================================================================
@@ -481,7 +524,9 @@ async function routeToAgent(
   req: IncomingMessage,
   res: ServerResponse,
   parsedUrl: URL,
-  handlers: Map<string, EdgeHandler>
+  handlers: Map<string, EdgeHandler>,
+  repoSpan: ExecutionSpan,
+  parsedBody?: unknown,
 ): Promise<void> {
   const path = parsedUrl.pathname;
 
@@ -489,6 +534,7 @@ async function routeToAgent(
   const agent = AGENT_REGISTRY.find(a => path.startsWith(a.path));
 
   if (!agent) {
+    failSpan(repoSpan, `No agent found for path: ${path}`);
     sendJson(res, {
       error: 'Not Found',
       message: `No agent found for path: ${path}`,
@@ -499,6 +545,7 @@ async function routeToAgent(
 
   const handler = handlers.get(agent.key);
   if (!handler) {
+    failSpan(repoSpan, `Agent ${agent.name} failed to load`);
     sendJson(res, {
       error: 'Agent Not Loaded',
       message: `Agent ${agent.name} failed to load`,
@@ -506,13 +553,38 @@ async function routeToAgent(
     return;
   }
 
+  // Create agent-level execution span
+  const agentSpan = createAgentSpan(repoSpan, agent.name, agent.key);
+
   try {
     const subPath = path.replace(agent.path, '') || '/detect';
     const fullUrl = `http://localhost${subPath}${parsedUrl.search}`;
-    const edgeReq = await toEdgeRequest(req, new URL(fullUrl, 'http://localhost'));
+    const subUrl = new URL(fullUrl, 'http://localhost');
+    // Use pre-parsed body if available (body already consumed for execution context extraction)
+    const edgeReq = parsedBody !== undefined
+      ? toEdgeRequestFromBody(req, subUrl, parsedBody)
+      : await toEdgeRequest(req, subUrl);
     const edgeRes = await handler(edgeReq);
-    sendJson(res, edgeRes.body, edgeRes.status, edgeRes.headers);
+
+    // Attach the agent's response as an artifact to the agent span
+    attachArtifact(agentSpan, 'detection_signal', {
+      status: edgeRes.status,
+      body: edgeRes.body as Record<string, unknown>,
+    });
+    completeSpan(agentSpan);
+
+    // Finalize repo span and build execution output
+    const executionOutput = finalizeRepoSpan(repoSpan);
+
+    // Envelope the response: existing body + execution spans
+    sendJson(res, {
+      result: edgeRes.body,
+      execution: executionOutput,
+    }, edgeRes.status, edgeRes.headers);
   } catch (error) {
+    // Mark agent span as failed
+    failSpan(agentSpan, error instanceof Error ? error.message : 'Unknown error');
+
     console.error(`[${SERVICE_NAME}] Agent error (${agent.name}):`, error);
 
     // Log abort for performance errors
@@ -528,10 +600,20 @@ async function routeToAgent(
       }
     }
 
+    // Mark repo span as failed but still return spans
+    failSpan(repoSpan, error instanceof Error ? error.message : 'Unknown error');
+
+    // Return error response with execution spans (failed spans are still valid output)
     sendJson(res, {
-      error: 'Internal Server Error',
-      message: error instanceof Error ? error.message : 'Unknown error',
-      agent: agent.name,
+      result: {
+        error: 'Internal Server Error',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        agent: agent.name,
+      },
+      execution: {
+        execution_id: repoSpan.execution_id,
+        repo_span: repoSpan,
+      },
     }, 500);
   }
 }
@@ -583,7 +665,7 @@ async function startServer(): Promise<void> {
     // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Execution-Id, X-Parent-Span-Id');
 
     if (req.method === 'OPTIONS') {
       res.writeHead(204);
@@ -604,8 +686,32 @@ async function startServer(): Promise<void> {
         case '/readiness':
           await handleReady(res, handlers);
           break;
-        default:
-          await routeToAgent(req, res, parsedUrl, handlers);
+        default: {
+          // Agent dispatch: extract execution context and create repo span
+          // parent_span_id is REQUIRED -- reject 400 if missing
+          let execCtx: ExecutionContext;
+          let body: unknown;
+          try {
+            body = await parseBody(req);
+            const edgeHeaders: Record<string, string> = {};
+            for (const [k, v] of Object.entries(req.headers)) {
+              if (typeof v === 'string') edgeHeaders[k] = v;
+              else if (Array.isArray(v)) edgeHeaders[k] = v[0];
+            }
+            execCtx = extractExecutionContext(body, edgeHeaders);
+          } catch (ctxError) {
+            sendJson(res, {
+              error: 'Missing Execution Context',
+              message: 'execution_id and parent_span_id are required for all agent invocations. This repository MUST NOT execute silently.',
+              code: 'EXECUTION_CONTEXT_REQUIRED',
+            }, 400);
+            return;
+          }
+
+          const repoSpan = createRepoSpan(execCtx);
+          await routeToAgent(req, res, parsedUrl, handlers, repoSpan, body);
+          break;
+        }
       }
     } catch (error) {
       console.error(`[${SERVICE_NAME}] Request error:`, error);

@@ -1,8 +1,9 @@
 //! Route configuration
 
-use axum::{routing::{get, post}, Router};
+use axum::{middleware, routing::{get, post}, Router};
 
 use crate::handlers;
+use crate::middleware::execution_context_middleware;
 use crate::state::AppState;
 
 /// Create the application router
@@ -22,16 +23,29 @@ pub fn create_router() -> Router {
 }
 
 /// Create the application router with state
+///
+/// Scan routes are guarded by the execution context middleware which:
+/// - Validates `x-execution-id` and `x-parent-span-id` headers
+/// - Rejects with 400 if either is missing
+/// - Creates a repo-level ExecutionSpan in request extensions
+///
+/// Health/version/scanner-list probes are NOT guarded (infrastructure routes).
 pub fn create_router_with_state(state: AppState) -> Router {
+    // Scan routes: require execution context from the Agentics Core
+    let scan_routes = Router::new()
+        .route("/v1/scan/prompt", post(handlers::scan_prompt))
+        .route("/v1/scan/output", post(handlers::scan_output))
+        .route("/v1/scan/batch", post(handlers::scan_batch))
+        .layer(middleware::from_fn(execution_context_middleware));
+
+    // Infrastructure routes: no execution context required
     Router::new()
         .route("/health", get(handlers::health))
         .route("/health/ready", get(handlers::ready))
         .route("/health/live", get(handlers::live))
         .route("/version", get(handlers::version))
-        .route("/v1/scan/prompt", post(handlers::scan_prompt))
-        .route("/v1/scan/output", post(handlers::scan_output))
-        .route("/v1/scan/batch", post(handlers::scan_batch))
         .route("/v1/scanners", get(handlers::list_scanners))
+        .merge(scan_routes)
         .with_state(state)
 }
 

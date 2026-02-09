@@ -158,6 +158,10 @@ export const InvocationContext = z.object({
   policies: z.array(PolicyReference).optional(),
   /** Additional context metadata */
   metadata: z.record(z.string(), z.unknown()).optional(),
+  /** Execution ID for the Agentics execution tree */
+  execution_id: z.string().uuid().optional(),
+  /** Parent span ID from the calling Core - required for external invocations */
+  parent_span_id: z.string().min(1).optional(),
 });
 export type InvocationContext = z.infer<typeof InvocationContext>;
 

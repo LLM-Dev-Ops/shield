@@ -1,6 +1,7 @@
 //! Data models for API requests and responses
 
 pub mod error;
+pub mod execution;
 pub mod request;
 pub mod response;
 
@@ -11,6 +12,10 @@ pub use request::{
 pub use response::{
     AnonymizeResponse, AnonymizedEntityDto, BatchScanResponse, DeanonymizeResponse, EntityDto,
     ListScannersResponse, RiskFactorDto, ScanResponse, ScannerMetadataResponse, ScannerResult,
+};
+pub use execution::{
+    EnvelopedBatchScanResponse, EnvelopedScanResponse, ExecutionOutput, ExecutionSpan, SpanArtifact,
+    SpanStatus, SpanType,
 };
 
 /// Generic API response wrapper

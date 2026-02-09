@@ -25,6 +25,10 @@
     "./read-cache": {
       "import": "./dist/read-cache.js",
       "types": "./dist/read-cache.d.ts"
+    },
+    "./execution-span": {
+      "import": "./dist/execution-span.js",
+      "types": "./dist/execution-span.d.ts"
     }
   },
   "files": [

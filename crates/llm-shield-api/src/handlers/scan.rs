@@ -1,9 +1,12 @@
 //! Scan handlers
 
-use crate::models::{ApiError, BatchScanRequest, ScanOutputRequest, ScanPromptRequest};
+use crate::models::{
+    ApiError, BatchScanRequest, EnvelopedBatchScanResponse, EnvelopedScanResponse,
+    ExecutionSpan, ScanOutputRequest, ScanPromptRequest,
+};
 use crate::services::ScannerService;
 use crate::state::AppState;
-use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
+use axum::{extract::State, http::StatusCode, response::IntoResponse, Extension, Json};
 use llm_shield_core::ScannerType;
 use std::sync::Arc;
 use std::time::Instant;
@@ -36,6 +39,7 @@ use validator::Validate;
 /// ```
 pub async fn scan_prompt(
     State(state): State<AppState>,
+    Extension(mut repo_span): Extension<ExecutionSpan>,
     Json(req): Json<ScanPromptRequest>,
 ) -> Result<impl IntoResponse, ApiError> {
     // Validate request
@@ -54,7 +58,7 @@ pub async fn scan_prompt(
     }
 
     // Determine which scanners to run
-    let scanners_to_run = if req.scanners.is_empty() {
+    let scanners_to_run: Vec<_> = if req.scanners.is_empty() {
         // Get all input scanners
         state
             .scanners
@@ -85,6 +89,9 @@ pub async fn scan_prompt(
         ));
     }
 
+    // Collect scanner names for agent spans
+    let scanner_names: Vec<String> = scanners_to_run.iter().map(|s| s.name().to_string()).collect();
+
     // Execute scanners
     let scanner_service = ScannerService::new();
     let scanner_results = scanner_service
@@ -94,6 +101,19 @@ pub async fn scan_prompt(
 
     let scan_time_ms = start.elapsed().as_millis() as u64;
 
+    // Create agent spans for each scanner that executed
+    for (i, scanner_name) in scanner_names.iter().enumerate() {
+        let mut agent_span = ExecutionSpan::new_agent(&repo_span, scanner_name);
+        if let Some(result) = scanner_results.get(i) {
+            agent_span.attach_artifact(
+                "detection_signal",
+                serde_json::to_value(result).unwrap_or_default(),
+            );
+        }
+        agent_span.complete();
+        repo_span.children.push(agent_span);
+    }
+
     // Create response
     let response = scanner_service.create_scan_response(scanner_results, scan_time_ms, false);
 
@@ -102,7 +122,18 @@ pub async fn scan_prompt(
         // TODO: Cache the response
     }
 
-    Ok((StatusCode::OK, Json(response)))
+    // Finalize repo span and build execution output
+    let execution = repo_span
+        .finalize()
+        .map_err(|e| ApiError::InvalidRequest(e))?;
+
+    Ok((
+        StatusCode::OK,
+        Json(EnvelopedScanResponse {
+            result: response,
+            execution,
+        }),
+    ))
 }
 
 /// POST /v1/scan/output - Scan LLM output
@@ -133,6 +164,7 @@ pub async fn scan_prompt(
 /// ```
 pub async fn scan_output(
     State(state): State<AppState>,
+    Extension(mut repo_span): Extension<ExecutionSpan>,
     Json(req): Json<ScanOutputRequest>,
 ) -> Result<impl IntoResponse, ApiError> {
     // Validate request
@@ -151,7 +183,7 @@ pub async fn scan_output(
     }
 
     // Determine which scanners to run
-    let scanners_to_run = if req.scanners.is_empty() {
+    let scanners_to_run: Vec<_> = if req.scanners.is_empty() {
         // Get all output scanners
         state
             .scanners
@@ -182,6 +214,9 @@ pub async fn scan_output(
         ));
     }
 
+    // Collect scanner names for agent spans
+    let scanner_names: Vec<String> = scanners_to_run.iter().map(|s| s.name().to_string()).collect();
+
     // Execute scanners on output (prompt available for context)
     // TODO: Pass prompt as context to scanners that need it
     let scanner_service = ScannerService::new();
@@ -192,6 +227,19 @@ pub async fn scan_output(
 
     let scan_time_ms = start.elapsed().as_millis() as u64;
 
+    // Create agent spans for each scanner that executed
+    for (i, scanner_name) in scanner_names.iter().enumerate() {
+        let mut agent_span = ExecutionSpan::new_agent(&repo_span, scanner_name);
+        if let Some(result) = scanner_results.get(i) {
+            agent_span.attach_artifact(
+                "detection_signal",
+                serde_json::to_value(result).unwrap_or_default(),
+            );
+        }
+        agent_span.complete();
+        repo_span.children.push(agent_span);
+    }
+
     // Create response
     let response = scanner_service.create_scan_response(scanner_results, scan_time_ms, false);
 
@@ -200,7 +248,18 @@ pub async fn scan_output(
         // TODO: Cache the response
     }
 
-    Ok((StatusCode::OK, Json(response)))
+    // Finalize repo span and build execution output
+    let execution = repo_span
+        .finalize()
+        .map_err(|e| ApiError::InvalidRequest(e))?;
+
+    Ok((
+        StatusCode::OK,
+        Json(EnvelopedScanResponse {
+            result: response,
+            execution,
+        }),
+    ))
 }
 
 /// POST /v1/scan/batch - Scan multiple prompts in parallel
@@ -237,6 +296,7 @@ pub async fn scan_output(
 /// ```
 pub async fn scan_batch(
     State(state): State<AppState>,
+    Extension(mut repo_span): Extension<ExecutionSpan>,
     Json(req): Json<BatchScanRequest>,
 ) -> Result<impl IntoResponse, ApiError> {
     // Validate request
@@ -266,30 +326,36 @@ pub async fn scan_batch(
         handles.push(handle);
     }
 
-    // Collect results
+    // Collect results and create agent spans for each batch item
     let mut results = Vec::new();
     let mut success_count = 0;
     let mut failure_count = 0;
 
-    for handle in handles {
+    for (i, handle) in handles.into_iter().enumerate() {
+        let agent_name = format!("batch-scan-item-{}", i);
+        let mut agent_span = ExecutionSpan::new_agent(&repo_span, &agent_name);
+
         match handle.await {
             Ok(Ok(scan_response)) => {
+                agent_span.attach_artifact(
+                    "detection_signal",
+                    serde_json::to_value(&scan_response).unwrap_or_default(),
+                );
+                agent_span.complete();
                 results.push(scan_response);
                 success_count += 1;
             }
             Ok(Err(e)) => {
-                // For failed scans, we could create an error response
-                // For now, just count the failure
+                agent_span.fail(&e);
                 failure_count += 1;
-                // Log error but continue processing
-                eprintln!("Scan failed: {:?}", e);
             }
             Err(e) => {
-                // Task join error
+                agent_span.fail(&format!("Task join error: {}", e));
                 failure_count += 1;
-                eprintln!("Task join error: {:?}", e);
             }
         }
+
+        repo_span.children.push(agent_span);
     }
 
     let total_time_ms = start.elapsed().as_millis() as u64;
@@ -301,7 +367,18 @@ pub async fn scan_batch(
         failure_count,
     };
 
-    Ok((StatusCode::OK, Json(response)))
+    // Finalize repo span and build execution output
+    let execution = repo_span
+        .finalize()
+        .map_err(|e| ApiError::InvalidRequest(e))?;
+
+    Ok((
+        StatusCode::OK,
+        Json(EnvelopedBatchScanResponse {
+            result: response,
+            execution,
+        }),
+    ))
 }
 
 /// Internal helper to process a single scan prompt
@@ -363,6 +440,10 @@ mod tests {
     use llm_shield_core::{async_trait, Result, ScanResult, Scanner, Vault};
     use std::sync::Arc;
 
+    fn test_repo_span() -> ExecutionSpan {
+        ExecutionSpan::new_repo("test-execution-id", "test-parent-span-id")
+    }
+
     struct MockScanner {
         name: String,
         is_valid: bool,
@@ -416,7 +497,7 @@ mod tests {
             cache_enabled: false,
         };
 
-        let result = scan_prompt(State(state), Json(req)).await;
+        let result = scan_prompt(State(state), Extension(test_repo_span()), Json(req)).await;
 
         assert!(result.is_ok());
     }
@@ -430,7 +511,7 @@ mod tests {
             cache_enabled: false,
         };
 
-        let result = scan_prompt(State(state), Json(req)).await;
+        let result = scan_prompt(State(state), Extension(test_repo_span()), Json(req)).await;
 
         assert!(result.is_err());
         let err = result.err().unwrap();
@@ -449,7 +530,7 @@ mod tests {
             cache_enabled: false,
         };
 
-        let result = scan_prompt(State(state), Json(req)).await;
+        let result = scan_prompt(State(state), Extension(test_repo_span()), Json(req)).await;
 
         assert!(result.is_err());
         let err = result.err().unwrap();
@@ -468,7 +549,7 @@ mod tests {
             cache_enabled: false,
         };
 
-        let result = scan_prompt(State(state), Json(req)).await;
+        let result = scan_prompt(State(state), Extension(test_repo_span()), Json(req)).await;
 
         assert!(result.is_ok());
     }
@@ -482,7 +563,7 @@ mod tests {
             cache_enabled: false,
         };
 
-        let result = scan_prompt(State(state), Json(req)).await;
+        let result = scan_prompt(State(state), Extension(test_repo_span()), Json(req)).await;
 
         assert!(result.is_ok());
     }
@@ -517,7 +598,7 @@ mod tests {
             cache_enabled: false,
         };
 
-        let result = scan_output(State(state), Json(req)).await;
+        let result = scan_output(State(state), Extension(test_repo_span()), Json(req)).await;
 
         assert!(result.is_ok());
     }
@@ -532,7 +613,7 @@ mod tests {
             cache_enabled: false,
         };
 
-        let result = scan_output(State(state), Json(req)).await;
+        let result = scan_output(State(state), Extension(test_repo_span()), Json(req)).await;
 
         assert!(result.is_err());
         let err = result.err().unwrap();
@@ -552,7 +633,7 @@ mod tests {
             cache_enabled: false,
         };
 
-        let result = scan_output(State(state), Json(req)).await;
+        let result = scan_output(State(state), Extension(test_repo_span()), Json(req)).await;
 
         assert!(result.is_err());
         let err = result.err().unwrap();
@@ -572,7 +653,7 @@ mod tests {
             cache_enabled: false,
         };
 
-        let result = scan_output(State(state), Json(req)).await;
+        let result = scan_output(State(state), Extension(test_repo_span()), Json(req)).await;
 
         assert!(result.is_err());
         let err = result.err().unwrap();
@@ -592,7 +673,7 @@ mod tests {
             cache_enabled: false,
         };
 
-        let result = scan_output(State(state), Json(req)).await;
+        let result = scan_output(State(state), Extension(test_repo_span()), Json(req)).await;
 
         assert!(result.is_ok());
     }
@@ -607,7 +688,7 @@ mod tests {
             cache_enabled: false,
         };
 
-        let result = scan_output(State(state), Json(req)).await;
+        let result = scan_output(State(state), Extension(test_repo_span()), Json(req)).await;
 
         assert!(result.is_ok());
     }

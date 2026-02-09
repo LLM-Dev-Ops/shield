@@ -65,3 +65,21 @@ export {
   type CacheEntry,
   type CacheStats,
 } from './read-cache.js';
+
+// Execution spans (Agentics Foundational Execution Unit)
+export {
+  validateExecutionContext,
+  createRepoSpan,
+  createAgentSpan,
+  attachArtifact,
+  completeSpan,
+  failSpan,
+  finalizeRepoSpan,
+  validateExecutionOutput,
+  type ExecutionContext,
+  type ExecutionSpan,
+  type ExecutionOutput,
+  type SpanArtifact,
+  type SpanType,
+  type SpanStatus,
+} from './execution-span.js';
