@@ -1,0 +1,26 @@
+{
+  "name": "@llm-shield/security-core",
+  "version": "1.0.0",
+  "description": "LLM-Security-Core gateway - sole authorized entry point for LLM-Shield scanning",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@llm-dev-ops/shield-sdk": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["llm", "security", "gateway", "shield"],
+  "license": "MIT"
+}

@@ -356,6 +356,97 @@ function sendJson(res: ServerResponse, data: unknown, status = 200, headers: Rec
 }
 
 // =============================================================================
+// CALLER TOKEN VALIDATION (LLM-Security-Core Gateway Enforcement)
+// =============================================================================
+
+interface CallerTokenFields {
+  caller_id: string;
+  signature: string;
+  issued_at: string;
+}
+
+/**
+ * Extract caller token from request body or headers.
+ *
+ * When GATEWAY_SHARED_SECRET is configured, all agent dispatch requests
+ * must include a valid caller token. This ensures LLM-Shield is only
+ * invoked via LLM-Security-Core.
+ *
+ * Headers: x-caller-id, x-caller-signature, x-caller-issued-at
+ * Body fields: caller_id, caller_signature, caller_issued_at
+ */
+function extractCallerToken(
+  body: unknown,
+  headers: Record<string, string>,
+): CallerTokenFields | null {
+  const bodyObj = body && typeof body === 'object' ? body as Record<string, unknown> : {};
+
+  const caller_id =
+    (typeof bodyObj.caller_id === 'string' ? bodyObj.caller_id : '') ||
+    headers['x-caller-id'] ||
+    '';
+  const signature =
+    (typeof bodyObj.caller_signature === 'string' ? bodyObj.caller_signature : '') ||
+    headers['x-caller-signature'] ||
+    '';
+  const issued_at =
+    (typeof bodyObj.caller_issued_at === 'string' ? bodyObj.caller_issued_at : '') ||
+    headers['x-caller-issued-at'] ||
+    '';
+
+  if (!caller_id || !signature || !issued_at) {
+    return null;
+  }
+
+  return { caller_id, signature, issued_at };
+}
+
+/**
+ * Validate a caller token's HMAC-SHA256 signature and expiry.
+ *
+ * @returns null if valid, error message string if invalid.
+ */
+function validateCallerToken(
+  token: CallerTokenFields,
+  sharedSecret: string,
+  ttlSeconds: number = 300,
+): string | null {
+  // Compute expected signature: HMAC-SHA256(caller_id|issued_at, secret)
+  const { createHmac, timingSafeEqual } = require('crypto');
+  const payload = `${token.caller_id}|${token.issued_at}`;
+  const expectedSignature: string = createHmac('sha256', sharedSecret)
+    .update(payload)
+    .digest('hex');
+
+  // Constant-time comparison
+  try {
+    const sigBuffer = Buffer.from(token.signature, 'hex');
+    const expectedBuffer = Buffer.from(expectedSignature, 'hex');
+    if (sigBuffer.length !== expectedBuffer.length || !timingSafeEqual(sigBuffer, expectedBuffer)) {
+      return 'Invalid caller token signature';
+    }
+  } catch {
+    return 'Invalid caller token signature format';
+  }
+
+  // Check expiry
+  const issuedAt = new Date(token.issued_at);
+  if (isNaN(issuedAt.getTime())) {
+    return 'Invalid issued_at timestamp';
+  }
+
+  const ageMs = Date.now() - issuedAt.getTime();
+  if (ageMs > ttlSeconds * 1000) {
+    return `Caller token expired (age: ${Math.round(ageMs / 1000)}s, TTL: ${ttlSeconds}s)`;
+  }
+  if (ageMs < -30_000) {
+    return 'Caller token issued_at is in the future';
+  }
+
+  return null; // Valid
+}
+
+// =============================================================================
 // EXECUTION CONTEXT EXTRACTION
 // =============================================================================
 
@@ -665,7 +756,7 @@ async function startServer(): Promise<void> {
     // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Execution-Id, X-Parent-Span-Id');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Execution-Id, X-Parent-Span-Id, X-Caller-Id, X-Caller-Signature, X-Caller-Issued-At');
 
     if (req.method === 'OPTIONS') {
       res.writeHead(204);
@@ -691,9 +782,9 @@ async function startServer(): Promise<void> {
           // parent_span_id is REQUIRED -- reject 400 if missing
           let execCtx: ExecutionContext;
           let body: unknown;
+          let edgeHeaders: Record<string, string> = {};
           try {
             body = await parseBody(req);
-            const edgeHeaders: Record<string, string> = {};
             for (const [k, v] of Object.entries(req.headers)) {
               if (typeof v === 'string') edgeHeaders[k] = v;
               else if (Array.isArray(v)) edgeHeaders[k] = v[0];
@@ -706,6 +797,34 @@ async function startServer(): Promise<void> {
               code: 'EXECUTION_CONTEXT_REQUIRED',
             }, 400);
             return;
+          }
+
+          // LLM-Security-Core gateway enforcement:
+          // When GATEWAY_SHARED_SECRET is configured, validate caller token.
+          // This ensures LLM-Shield agents are ONLY invoked via LLM-Security-Core.
+          const gatewaySecret = process.env.GATEWAY_SHARED_SECRET;
+          if (gatewaySecret) {
+            const callerToken = extractCallerToken(body, edgeHeaders);
+            if (!callerToken) {
+              sendJson(res, {
+                error: 'Missing Caller Token',
+                message: 'A valid caller token is required for all agent invocations. '
+                  + 'Provide x-caller-id, x-caller-signature, x-caller-issued-at headers. '
+                  + 'Direct calls to LLM-Shield are forbidden; use LLM-Security-Core.',
+                code: 'CALLER_TOKEN_REQUIRED',
+              }, 401);
+              return;
+            }
+
+            const tokenError = validateCallerToken(callerToken, gatewaySecret);
+            if (tokenError) {
+              sendJson(res, {
+                error: 'Invalid Caller Token',
+                message: tokenError,
+                code: 'INVALID_CALLER_TOKEN',
+              }, 401);
+              return;
+            }
           }
 
           const repoSpan = createRepoSpan(execCtx);

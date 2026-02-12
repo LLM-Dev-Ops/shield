@@ -19,6 +19,14 @@ use llm_shield_core::{ScanResult, Scanner, ScannerPipeline, Vault};
 use std::sync::Arc;
 use std::time::Instant;
 
+/// Task-local gateway token. When the `enforce-gateway` feature is active,
+/// Shield's scanning methods require this to be set (via `GATEWAY_TOKEN.scope()`),
+/// ensuring all invocations go through `llm-security-core::SecurityCore`.
+#[cfg(feature = "enforce-gateway")]
+tokio::task_local! {
+    pub static GATEWAY_TOKEN: String;
+}
+
 /// Main entry point for the LLM Shield SDK
 ///
 /// Shield provides a high-level API for scanning LLM prompts and outputs
@@ -306,6 +314,17 @@ impl Shield {
         input: &str,
         scanners: &[Arc<dyn Scanner>],
     ) -> SdkResult<ScanResult> {
+        // Gateway enforcement: reject direct calls when enforce-gateway is active
+        #[cfg(feature = "enforce-gateway")]
+        {
+            GATEWAY_TOKEN.try_with(|_| ()).map_err(|_| {
+                SdkError::unauthorized(
+                    "Direct call to Shield is forbidden. \
+                     Use llm_security_core::SecurityCore instead.",
+                )
+            })?;
+        }
+
         if scanners.is_empty() {
             // No scanners configured - pass through
             return Ok(ScanResult::pass(input.to_string()));

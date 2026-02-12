@@ -24,7 +24,7 @@
  */
 
 // Main exports
-export { Shield, ShieldBuilder } from './shield.js';
+export { Shield, ShieldBuilder, gatewayTokenStore } from './shield.js';
 
 // Types
 export type {

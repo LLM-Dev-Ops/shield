@@ -25,6 +25,9 @@ ml-models = []
 cloud-aws = ["llm-shield-cloud-aws"]
 cloud-gcp = ["llm-shield-cloud-gcp"]
 cloud-azure = ["llm-shield-cloud-azure"]
+# Gateway enforcement: when enabled, Shield requires GATEWAY_TOKEN task_local to be set.
+# This feature is activated by llm-security-core to prevent direct Shield usage.
+enforce-gateway = []
 # Phase 2B Infra integrations
 infra = [
     "infra-errors",

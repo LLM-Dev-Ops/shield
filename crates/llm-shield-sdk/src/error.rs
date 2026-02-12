@@ -72,6 +72,10 @@ pub enum SdkError {
     #[error("Unknown preset: {0}")]
     UnknownPreset(String),
 
+    /// Unauthorized access (direct call without gateway)
+    #[error("Unauthorized: {0}")]
+    Unauthorized(String),
+
     /// Core error wrapper
     #[error(transparent)]
     Core(#[from] CoreError),
@@ -161,6 +165,11 @@ impl SdkError {
         Self::UnknownPreset(preset.into())
     }
 
+    /// Create an unauthorized access error
+    pub fn unauthorized<S: Into<String>>(message: S) -> Self {
+        Self::Unauthorized(message.into())
+    }
+
     /// Check if error is retryable
     pub fn is_retryable(&self) -> bool {
         match self {
@@ -182,6 +191,7 @@ impl SdkError {
             Self::Validation(_) => "validation",
             Self::Timeout { .. } => "timeout",
             Self::UnknownPreset(_) => "unknown_preset",
+            Self::Unauthorized(_) => "unauthorized",
             Self::Core(_) => "core",
             Self::Io(_) => "io",
             Self::Serialization(_) => "serialization",

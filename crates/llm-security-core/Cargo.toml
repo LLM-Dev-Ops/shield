@@ -1,0 +1,42 @@
+[package]
+name = "llm-security-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "LLM-Security-Core gateway - sole authorized entry point for LLM-Shield scanning"
+keywords = ["llm", "security", "gateway", "shield"]
+categories = ["api-bindings", "authentication"]
+
+[features]
+default = []
+
+[dependencies]
+# Inner shield SDK (with gateway enforcement enabled)
+llm-shield-sdk = { version = "0.1.0", path = "../llm-shield-sdk", features = ["enforce-gateway"] }
+llm-shield-core = { version = "0.1.0", path = "../llm-shield-core" }
+
+# HMAC signing
+hmac = { workspace = true }
+sha2 = { workspace = true }
+
+# Time handling
+chrono = { workspace = true }
+
+# Async runtime
+async-trait = { workspace = true }
+tokio = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Error handling
+thiserror = { workspace = true }
+
+# Hex encoding
+hex = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["full", "test-util", "macros"] }

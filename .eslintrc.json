@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json.schemastore.org/eslintrc",
+  "root": true,
+  "rules": {
+    "no-restricted-imports": ["error", {
+      "paths": [
+        {
+          "name": "@llm-shield/core",
+          "message": "Direct imports from @llm-shield/core are FORBIDDEN. Use @llm-shield/security-core instead. LLM-Shield must only be invoked via LLM-Security-Core."
+        },
+        {
+          "name": "llm-shield-core",
+          "message": "Direct imports from llm-shield-core are FORBIDDEN. Use @llm-shield/security-core instead. LLM-Shield must only be invoked via LLM-Security-Core."
+        },
+        {
+          "name": "@llm-dev-ops/shield-sdk",
+          "message": "Direct imports from @llm-dev-ops/shield-sdk are FORBIDDEN. Use @llm-shield/security-core instead. LLM-Shield must only be invoked via LLM-Security-Core."
+        }
+      ]
+    }]
+  },
+  "overrides": [
+    {
+      "files": [
+        "packages/security-core/**/*.ts",
+        "packages/security-core/**/*.js"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    },
+    {
+      "files": [
+        "packages/shield-sdk/**/*.ts",
+        "packages/shield-sdk/**/*.js",
+        "packages/core/**/*.ts",
+        "packages/core/**/*.js"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ]
+}

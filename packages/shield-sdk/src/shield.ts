@@ -1,8 +1,18 @@
+import { AsyncLocalStorage } from 'async_hooks';
 import type { Scanner, ScanResult, ShieldConfig, ScanOptions, RiskFactor, Entity, Severity } from './types.js';
 import { PromptInjectionScanner } from './scanners/prompt-injection.js';
 import { SecretsScanner } from './scanners/secrets.js';
 import { PIIScanner } from './scanners/pii.js';
 import { ToxicityScanner } from './scanners/toxicity.js';
+
+/**
+ * AsyncLocalStorage for gateway token propagation.
+ *
+ * When LLM_SHIELD_ENFORCE_GATEWAY=true, Shield's scanning methods
+ * require this store to contain a valid token, ensuring all invocations
+ * go through @llm-shield/security-core SecurityCore.
+ */
+export const gatewayTokenStore = new AsyncLocalStorage<{ token: unknown }>();
 
 /**
  * Shield - Main security facade for LLM applications
@@ -175,6 +185,17 @@ export class Shield {
     scanners: Scanner[],
     options?: ScanOptions
   ): Promise<ScanResult> {
+    // Gateway enforcement: reject direct calls when enabled
+    if (process.env.LLM_SHIELD_ENFORCE_GATEWAY === 'true') {
+      const store = gatewayTokenStore.getStore();
+      if (!store?.token) {
+        throw new Error(
+          'Direct call to Shield is forbidden. Use @llm-shield/security-core SecurityCore instead. '
+          + 'Set LLM_SHIELD_ENFORCE_GATEWAY=false to disable this check.'
+        );
+      }
+    }
+
     if (scanners.length === 0) {
       return {
         isValid: true,

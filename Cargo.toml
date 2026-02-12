@@ -16,6 +16,7 @@ members = [
     "crates/llm-shield-cloud-azure",
     "crates/llm-shield-sdk",
     "crates/llm-shield-benchmarks",
+    "crates/llm-security-core",
 ]
 
 [workspace.package]
@@ -69,6 +70,12 @@ regex = "1.10"
 unicode-normalization = "0.1"
 unicode-segmentation = "1.11"
 whatlang = "0.16"
+
+# Cryptography
+hmac = "0.12"
+sha2 = "0.10"
+hex = "0.4"
+chrono = { version = "0.4", features = ["serde"] }
 
 # Utilities
 tracing = "0.1"
