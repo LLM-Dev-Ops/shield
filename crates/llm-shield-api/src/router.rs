@@ -14,12 +14,14 @@ use crate::state::AppState;
 /// - GET /health/live - Liveness probe
 /// - GET /version - Version information
 /// - POST /v1/scan/prompt - Scan user prompt
+/// - POST /api/v1/scan - Internal ingest endpoint (security-core fanout)
 pub fn create_router() -> Router {
     Router::new()
         .route("/health", get(handlers::health))
         .route("/health/ready", get(handlers::ready))
         .route("/health/live", get(handlers::live))
         .route("/version", get(handlers::version))
+        .route("/api/v1/scan", post(handlers::ingest_scan))
 }
 
 /// Create the application router with state
@@ -47,6 +49,7 @@ pub fn create_router_with_state(state: AppState) -> Router {
         .route("/health/live", get(handlers::live))
         .route("/version", get(handlers::version))
         .route("/v1/scanners", get(handlers::list_scanners))
+        .route("/api/v1/scan", post(handlers::ingest_scan))
         .merge(scan_routes)
         .with_state(state)
 }

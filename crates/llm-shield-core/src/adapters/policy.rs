@@ -325,7 +325,7 @@ impl<E: PolicyEvaluator> PolicyAdapter<E> {
         mut scan_result: ScanResult,
     ) -> Result<ScanResult> {
         let decision = self.evaluate(context, content).await.map_err(|e| {
-            Error::scanner(format!("Policy evaluation failed: {}", e))
+            Error::scanner("policy", format!("Policy evaluation failed: {}", e))
         })?;
 
         // Apply risk adjustment if provided

@@ -29,6 +29,11 @@ chrono = { version = "0.4", features = ["serde"] }
 # Utilities
 uuid = { version = "1.11", features = ["v4", "serde"] }
 
+# Phase 2B Infra dependencies (optional - use with "infra" feature)
+infra-errors = { workspace = true, optional = true }
+infra-retry = { workspace = true, optional = true }
+infra-otel = { workspace = true, optional = true }
+
 [dev-dependencies]
 tokio-test = "0.4"
 futures = { workspace = true }
@@ -38,11 +43,6 @@ criterion = { workspace = true }
 [[bench]]
 name = "cloud_bench"
 harness = false
-
-# Phase 2B Infra dependencies (optional - use with "infra" feature)
-infra-errors = { workspace = true, optional = true }
-infra-retry = { workspace = true, optional = true }
-infra-otel = { workspace = true, optional = true }
 
 [features]
 default = []

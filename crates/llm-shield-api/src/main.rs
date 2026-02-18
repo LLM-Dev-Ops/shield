@@ -15,9 +15,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create router
     let app = create_router();
 
-    // Bind server
-    let addr = "127.0.0.1:3000";
-    let listener = tokio::net::TcpListener::bind(addr).await?;
+    // Bind server (respect PORT env for Cloud Run, default to 8080)
+    let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
+    let addr = format!("0.0.0.0:{}", port);
+    let listener = tokio::net::TcpListener::bind(&addr).await?;
 
     info!("🚀 LLM Shield API server listening on http://{}", addr);
     info!("Health check: http://{}/health", addr);

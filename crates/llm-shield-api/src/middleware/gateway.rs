@@ -46,9 +46,9 @@ pub struct GatewayCaller {
 ///
 /// When `GATEWAY_SHARED_SECRET` is NOT configured:
 /// - Passes through all requests (backward compatible)
-pub async fn gateway_middleware<B>(
-    mut request: Request<B>,
-    next: Next<B>,
+pub async fn gateway_middleware(
+    mut request: Request<axum::body::Body>,
+    next: Next,
 ) -> Response {
     let secret = match get_gateway_secret() {
         Some(secret) => secret,

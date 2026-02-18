@@ -24,9 +24,9 @@ pub mod config;
 // Re-export main types for convenience
 pub use policy::{
     PolicyAdapter, PolicyDecision, PolicyContext, PolicyEvaluator,
-    EnforcementAction, PolicyResult,
+    EnforcementAction, PolicyResult, PolicyHook,
 };
 pub use config::{
     ConfigAdapter, ShieldParameters, ThresholdConfig, PatternConfig,
-    ConfigLoader, ConfigSource,
+    ConfigLoader, ConfigSource, ConfigHook,
 };

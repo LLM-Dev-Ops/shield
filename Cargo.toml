@@ -63,7 +63,7 @@ anyhow = "1.0"
 # ML/AI
 ort = { version = "2.0.0-rc.10", features = ["half"] }
 tokenizers = "0.20"
-ndarray = "0.16"
+ndarray = "0.17"
 
 # Text processing
 regex = "1.10"
