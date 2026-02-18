@@ -33,7 +33,7 @@ import {
   RiskFactor,
   Severity,
   type SecretTypeCategory,
-} from '../../contracts/index.js';
+} from '@llm-shield/agentics-contracts';
 import {
   SECRET_PATTERNS,
   getPatternsByCategory,

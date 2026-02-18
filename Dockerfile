@@ -19,8 +19,8 @@ RUN apt-get update && apt-get install -y \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy workspace configuration
-COPY Cargo.toml ./
+# Copy workspace configuration and lockfile
+COPY Cargo.toml Cargo.lock ./
 
 # Copy all crate manifests for dependency caching (must match workspace members)
 COPY crates/llm-shield-core/Cargo.toml crates/llm-shield-core/
@@ -100,7 +100,7 @@ EXPOSE 8080 9090
 
 # Run the application
 ENTRYPOINT ["/usr/local/bin/llm-shield-api"]
-CMD ["--host", "0.0.0.0", "--port", "8080"]
+CMD []
 
 # ==============================================================================
 # Build Information

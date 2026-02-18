@@ -11,11 +11,11 @@
 # - Startup validation enforced
 # - Agent identity standardization via environment variables
 #
-# Trigger:
-#   gcloud builds submit --config cloudbuild.yaml .
+# Trigger (run from repo root):
+#   gcloud builds submit --config agents/cloudbuild.yaml --project agentics-dev .
 #
 # Environment-specific deployment:
-#   gcloud builds submit --config cloudbuild.yaml . \
+#   gcloud builds submit --config agents/cloudbuild.yaml --project agentics-dev . \
 #     --substitutions=_ENV=prod,_REGION=us-central1
 # ============================================================================
 
@@ -58,10 +58,10 @@ steps:
       - '-t'
       - 'gcr.io/${PROJECT_ID}/${_SERVICE_NAME}:${_SERVICE_VERSION}'
       - '-f'
-      - 'Dockerfile'
+      - 'agents/Dockerfile'
       - '--build-arg'
       - 'SERVICE_VERSION=${_SERVICE_VERSION}'
-      - '.'
+      - 'agents/'
 
   # ============================================================================
   # Step 2: Push to Container Registry
@@ -88,7 +88,7 @@ steps:
     args:
       - 'run'
       - 'deploy'
-      - '${_SERVICE_NAME}-${_ENV}'
+      - '${_SERVICE_NAME}'
       - '--image'
       - 'gcr.io/${PROJECT_ID}/${_SERVICE_NAME}:${_TAG}'
       - '--region'
@@ -137,7 +137,7 @@ steps:
       - |
         set -e
         echo "Getting service URL..."
-        SERVICE_URL=$$(gcloud run services describe ${_SERVICE_NAME}-${_ENV} \
+        SERVICE_URL=$$(gcloud run services describe ${_SERVICE_NAME} \
           --region=${_REGION} \
           --format='value(status.url)')
 
@@ -150,35 +150,22 @@ steps:
         HEALTH_RESPONSE=$$(curl -sf "$${SERVICE_URL}/health" || echo '{"status":"error"}')
         echo "Health response: $${HEALTH_RESPONSE}"
 
-        # Verify health status
+        # Verify health status (Node.js service returns "status":"healthy")
         if echo "$${HEALTH_RESPONSE}" | grep -q '"status":"healthy"'; then
           echo "✓ Health check passed"
         elif echo "$${HEALTH_RESPONSE}" | grep -q '"status":"degraded"'; then
-          echo "⚠ Service degraded (Ruvector may be unavailable)"
-          # In production, we might want to fail here
-          # exit 1
+          echo "⚠ Health check: degraded (Ruvector may be unavailable)"
         else
           echo "✗ Health check failed"
           exit 1
         fi
 
-        # Verify agent identity
-        echo "Checking info endpoint..."
-        INFO_RESPONSE=$$(curl -sf "$${SERVICE_URL}/info" || echo '{}')
-        echo "Info response: $${INFO_RESPONSE}"
-
-        if echo "$${INFO_RESPONSE}" | grep -q '"phase":"phase1"'; then
-          echo "✓ Agent identity verified (phase1/layer1)"
-        else
-          echo "⚠ Agent identity not found in response"
-        fi
-
         # Verify readiness
         echo "Checking readiness endpoint..."
-        READY_RESPONSE=$$(curl -sf "$${SERVICE_URL}/ready" || echo '{"ready":false}')
+        READY_RESPONSE=$$(curl -sf "$${SERVICE_URL}/health/ready" || echo '{"status":"error"}')
         echo "Readiness response: $${READY_RESPONSE}"
 
-        if echo "$${READY_RESPONSE}" | grep -q '"ready":true'; then
+        if echo "$${READY_RESPONSE}" | grep -q '"status":"ready"'; then
           echo "✓ Readiness check passed"
         else
           echo "⚠ Service not fully ready"

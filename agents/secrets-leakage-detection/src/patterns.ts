@@ -3,7 +3,7 @@
  * @description Secret detection patterns for the Secrets Leakage Detection Agent
  */
 
-import type { SecretTypeCategory } from '../../contracts/index.js';
+import type { SecretTypeCategory } from '@llm-shield/agentics-contracts';
 
 export interface SecretPattern {
   /** Unique pattern identifier */

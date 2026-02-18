@@ -6,6 +6,7 @@
   "type": "module",
   "workspaces": [
     "contracts",
+    "lib",
     "prompt-injection-detection",
     "pii-detection",
     "data-redaction",

@@ -132,18 +132,15 @@ async function loadHandlers(): Promise<Map<string, EdgeHandler>> {
     console.error(`[${SERVICE_NAME}] Failed to load data-redaction:`, e);
   }
 
-  // 4. Secrets Leakage Detection - exports edgeHandler (default)
+  // 4. Secrets Leakage Detection - exports handleDetection
   try {
     const mod = await import('../../secrets-leakage-detection/dist/handler.js');
-    const edgeHandler = mod.default || mod.edgeHandler;
-    if (edgeHandler && typeof edgeHandler.detect === 'function') {
-      handlers.set('secrets', wrapHandler(async (req: EdgeRequest): Promise<EdgeResponse> => {
-        const input = await req.json();
-        const result = await edgeHandler.detect(input);
-        return { status: 200, headers: { 'Content-Type': 'application/json' }, body: result };
-      }, 'secrets'));
-      console.log(`[${SERVICE_NAME}] Loaded: secrets-leakage-detection`);
-    }
+    handlers.set('secrets', wrapHandler(async (req: EdgeRequest): Promise<EdgeResponse> => {
+      const input = await req.json();
+      const result = await mod.handleDetection(input);
+      return { status: 200, headers: { 'Content-Type': 'application/json' }, body: result };
+    }, 'secrets'));
+    console.log(`[${SERVICE_NAME}] Loaded: secrets-leakage-detection`);
   } catch (e) {
     console.error(`[${SERVICE_NAME}] Failed to load secrets-leakage-detection:`, e);
   }
@@ -183,34 +180,28 @@ async function loadHandlers(): Promise<Map<string, EdgeHandler>> {
     console.error(`[${SERVICE_NAME}] Failed to load content-moderation:`, e);
   }
 
-  // 8. Model Abuse Detection - exports edgeHandler (default)
+  // 8. Model Abuse Detection - exports handleDetection
   try {
     const mod = await import('../../model-abuse-detection/dist/handler.js');
-    const edgeHandler = mod.default || mod.edgeHandler;
-    if (edgeHandler && typeof edgeHandler.detect === 'function') {
-      handlers.set('abuse', wrapHandler(async (req: EdgeRequest): Promise<EdgeResponse> => {
-        const input = await req.json();
-        const result = await edgeHandler.detect(input);
-        return { status: 200, headers: { 'Content-Type': 'application/json' }, body: result };
-      }, 'abuse'));
-      console.log(`[${SERVICE_NAME}] Loaded: model-abuse-detection`);
-    }
+    handlers.set('abuse', wrapHandler(async (req: EdgeRequest): Promise<EdgeResponse> => {
+      const input = await req.json();
+      const result = await mod.handleDetection(input);
+      return { status: 200, headers: { 'Content-Type': 'application/json' }, body: result };
+    }, 'abuse'));
+    console.log(`[${SERVICE_NAME}] Loaded: model-abuse-detection`);
   } catch (e) {
     console.error(`[${SERVICE_NAME}] Failed to load model-abuse-detection:`, e);
   }
 
-  // 9. Credential Exposure Detection - exports edgeHandler (default)
+  // 9. Credential Exposure Detection - exports handleDetection
   try {
     const mod = await import('../../credential-exposure-detection/dist/handler.js');
-    const edgeHandler = mod.default || mod.edgeHandler;
-    if (edgeHandler && typeof edgeHandler.detect === 'function') {
-      handlers.set('credentials', wrapHandler(async (req: EdgeRequest): Promise<EdgeResponse> => {
-        const input = await req.json();
-        const result = await edgeHandler.detect(input);
-        return { status: 200, headers: { 'Content-Type': 'application/json' }, body: result };
-      }, 'credentials'));
-      console.log(`[${SERVICE_NAME}] Loaded: credential-exposure-detection`);
-    }
+    handlers.set('credentials', wrapHandler(async (req: EdgeRequest): Promise<EdgeResponse> => {
+      const input = await req.json();
+      const result = await mod.handleDetection(input);
+      return { status: 200, headers: { 'Content-Type': 'application/json' }, body: result };
+    }, 'credentials'));
+    console.log(`[${SERVICE_NAME}] Loaded: credential-exposure-detection`);
   } catch (e) {
     console.error(`[${SERVICE_NAME}] Failed to load credential-exposure-detection:`, e);
   }

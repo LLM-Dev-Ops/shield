@@ -243,7 +243,12 @@ export async function handleDetection(
       pattern_match_count: entities.length,
       detected_categories: detectedCategories,
       category_counts: categoryCounts,
-      behavioral_summary: behavioralSummary,
+      behavioral_summary: {
+        appears_automated: behavioralSummary.appearsAutomated,
+        abnormal_rate: behavioralSummary.abnormalRate,
+        matches_abuse_signature: behavioralSummary.matchesAbuseSignature,
+        red_flag_count: behavioralSummary.redFlagCount,
+      },
     };
 
     const durationMs = performance.now() - startTime;

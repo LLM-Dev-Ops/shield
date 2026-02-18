@@ -5,7 +5,7 @@
  * All telemetry is sanitized and NEVER contains raw credentials.
  */
 
-import type { CredentialType, Severity } from '../../contracts/index.js';
+import type { CredentialType, Severity } from '@llm-shield/agentics-contracts';
 
 /**
  * Telemetry event types

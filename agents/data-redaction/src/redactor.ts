@@ -18,7 +18,7 @@ import type {
   Severity,
   PIITypeCategory,
   SecretTypeCategory,
-} from '../../../contracts/index.js';
+} from '@llm-shield/agentics-contracts';
 
 // =============================================================================
 // INTERFACES

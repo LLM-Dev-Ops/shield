@@ -33,7 +33,7 @@ import {
   Severity,
   type CredentialType,
   type AgentError,
-} from '../../contracts/index.js';
+} from '@llm-shield/agentics-contracts';
 import {
   CREDENTIAL_PATTERNS,
   getPatternsByCategory,

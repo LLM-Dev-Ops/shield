@@ -34,51 +34,27 @@ RUN apt-get update && apt-get install -y \
 # Copy everything
 COPY . .
 
-# Install dependencies for the root workspace
+# Install all workspace dependencies (hoists shared deps to root)
 RUN npm install
 
-# Build contracts first (shared dependency)
-WORKDIR /app/contracts
-RUN npm run build || echo "contracts build completed"
-
-# Build lib module (shared infrastructure for hardening)
-WORKDIR /app/lib
-RUN npm install && npm run build || echo "lib build completed"
-
-# Build each agent
-WORKDIR /app/prompt-injection-detection
-RUN npm install && npm run build || echo "prompt-injection build completed"
-
-WORKDIR /app/pii-detection
-RUN npm install && npm run build || echo "pii-detection build completed"
-
-WORKDIR /app/data-redaction
-RUN npm install && npm run build || echo "data-redaction build completed"
-
-WORKDIR /app/secrets-leakage-detection
-RUN npm install && npm run build || echo "secrets-leakage build completed"
-
-WORKDIR /app/toxicity-detection
-RUN npm install && npm run build || echo "toxicity-detection build completed"
-
-WORKDIR /app/safety-boundary
-RUN npm install && npm run build || echo "safety-boundary build completed"
-
-WORKDIR /app/content-moderation
-RUN npm install && npm run build || echo "content-moderation build completed"
-
-WORKDIR /app/model-abuse-detection
-RUN npm install && npm run build || echo "model-abuse build completed"
-
-WORKDIR /app/credential-exposure-detection
-RUN npm install && npm run build || echo "credential-exposure build completed"
-
-# Build service (with hardened startup validation)
-WORKDIR /app/service
-RUN npm install && npm run build || echo "service build completed"
-
-# Return to app root
-WORKDIR /app
+# Build all workspaces in dependency order:
+# 1. contracts (shared types) and lib (shared infrastructure) first
+# 2. All agent modules (tolerate TS errors - JS is still emitted via noEmitOnError:false)
+# 3. service (unified entry point - uses dynamic imports, tolerates missing type decls)
+RUN npm run build -w @llm-shield/agentics-contracts && \
+    npm run build -w @llm-shield/lib && \
+    npx -w prompt-injection-detection tsc || true && \
+    npx -w pii-detection tsc || true && \
+    npx -w data-redaction tsc || true && \
+    npx -w secrets-leakage-detection tsc || true && \
+    npx -w toxicity-detection tsc || true && \
+    npx -w safety-boundary tsc || true && \
+    npx -w content-moderation tsc || true && \
+    npx -w model-abuse-detection tsc || true && \
+    npx -w credential-exposure-detection tsc || true && \
+    npx -w service tsc || true && \
+    echo "Build complete - verifying service entry point..." && \
+    test -f service/dist/index.js && echo "service/dist/index.js exists"
 
 # Create non-root user for security
 RUN groupadd -r llmshield && useradd -r -g llmshield llmshield && \

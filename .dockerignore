@@ -46,7 +46,6 @@ build/
 .pytest_cache/
 
 # Rust
-Cargo.lock
 **/*.rs.bk
 *.pdb
 

@@ -43,7 +43,7 @@ export {
 
 // Telemetry exports
 export {
-  TelemetryEmitter,
+  type TelemetryEmitter,
   ConsoleTelemetryEmitter,
   HttpTelemetryEmitter,
   NoOpTelemetryEmitter,
@@ -64,7 +64,10 @@ export type {
   SecretTypeCategory,
   SecretsLeakageDetectionInput,
   DetectedSecretEntity,
-} from '../../contracts/index.js';
+} from '@llm-shield/agentics-contracts';
+
+// Local import for use in this module
+import type { SecretTypeCategory } from '@llm-shield/agentics-contracts';
 
 /**
  * Agent identity constants

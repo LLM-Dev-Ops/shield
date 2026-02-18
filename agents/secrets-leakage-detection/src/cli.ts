@@ -16,7 +16,7 @@ import {
   CliInvocation,
   SecretsLeakageDetectionInput,
   type SecretTypeCategory,
-} from '../../contracts/index.js';
+} from '@llm-shield/agentics-contracts';
 
 /**
  * CLI argument parser result
@@ -178,10 +178,10 @@ async function runTest(args: ParsedArgs): Promise<string> {
       timestamp: new Date().toISOString(),
       content_source: 'user_input',
     },
-    sensitivity: args.sensitivity,
-    detect_categories: args.categories,
-    entropy_detection: args.entropyDetection,
-    entropy_threshold: args.entropyThreshold,
+    ...(args.sensitivity !== undefined && { sensitivity: args.sensitivity }),
+    ...(args.categories !== undefined && { detect_categories: args.categories }),
+    ...(args.entropyDetection !== undefined && { entropy_detection: args.entropyDetection }),
+    ...(args.entropyThreshold !== undefined && { entropy_threshold: args.entropyThreshold }),
   };
 
   const result = await handleDetection(input, { skipPersistence: true });

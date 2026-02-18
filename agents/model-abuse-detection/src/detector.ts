@@ -461,7 +461,7 @@ export class ModelAbuseDetector {
       }
     }
 
-    return SEVERITY_ORDER[maxSeverityIndex];
+    return SEVERITY_ORDER[maxSeverityIndex] ?? 'none';
   }
 
   /**
@@ -540,7 +540,7 @@ export class ModelAbuseDetector {
       }
     }
 
-    return SEVERITY_ORDER[maxIndex];
+    return SEVERITY_ORDER[maxIndex] ?? 'none';
   }
 
   /**

@@ -9,7 +9,7 @@
  * Only hashes, counts, and sanitized metadata are persisted.
  */
 
-import type { DataRedactionDecisionEvent, PolicyReference, RedactionStrategy, Severity } from '../../../contracts/index.js';
+import type { DataRedactionDecisionEvent, PolicyReference, RedactionStrategy, Severity } from '@llm-shield/agentics-contracts';
 
 // =============================================================================
 // INTERFACES
@@ -204,8 +204,8 @@ export class RuvectorClient {
         throw new Error(`ruvector-service error: ${response.status} - ${errorText}`);
       }
 
-      const result = await response.json();
-      return { eventId: result.event_id || result.id };
+      const result = await response.json() as Record<string, unknown>;
+      return { eventId: (result.event_id || result.id) as string };
     } finally {
       clearTimeout(timeoutId);
     }

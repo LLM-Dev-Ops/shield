@@ -10,7 +10,7 @@
  * Only SHA-256 hashes and aggregated metadata are persisted.
  */
 
-import type { CredentialExposureDecisionEvent } from '../../contracts/index.js';
+import type { CredentialExposureDecisionEvent } from '@llm-shield/agentics-contracts';
 
 /**
  * Configuration for ruvector-service client
@@ -104,11 +104,11 @@ export class RuVectorClient {
         };
       }
 
-      const data = await response.json();
+      const data = await response.json() as Record<string, unknown>;
       return {
         success: true,
-        event_id: data.event_id,
-        persisted_at: data.persisted_at || new Date().toISOString(),
+        event_id: data.event_id as string | undefined,
+        persisted_at: (data.persisted_at as string) || new Date().toISOString(),
       };
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
@@ -159,7 +159,7 @@ export class RuVectorClient {
         return null;
       }
 
-      return await response.json();
+      return await response.json() as CredentialExposureDecisionEvent;
     } catch {
       return null;
     }

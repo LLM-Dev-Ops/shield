@@ -130,11 +130,11 @@ export class RuVectorClient {
           };
         }
 
-        const data = await response.json();
+        const data = await response.json() as Record<string, unknown>;
         return {
           success: true,
-          event_id: data.event_id,
-          persisted_at: data.persisted_at || new Date().toISOString(),
+          event_id: data.event_id as string | undefined,
+          persisted_at: (data.persisted_at as string) || new Date().toISOString(),
         };
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {

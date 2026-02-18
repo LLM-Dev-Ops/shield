@@ -24,7 +24,7 @@ import {
   getPasswordOnlyPatterns,
   getAuthHeaderPatterns,
 } from './patterns.js';
-import type { CredentialExposureDetectionInput } from '../../contracts/index.js';
+import type { CredentialExposureDetectionInput } from '@llm-shield/agentics-contracts';
 
 /**
  * CLI invocation modes
@@ -134,9 +134,9 @@ Examples:
 /**
  * Read content from stdin if available
  */
-async function readStdin(): Promise<string | null> {
+async function readStdin(): Promise<string | undefined> {
   if (process.stdin.isTTY) {
-    return null;
+    return undefined;
   }
 
   const chunks: Buffer[] = [];

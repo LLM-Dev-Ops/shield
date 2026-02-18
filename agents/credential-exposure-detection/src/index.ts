@@ -83,7 +83,7 @@ export type {
   CredentialExposureDetectionResult,
   CredentialExposureDetectionAgentOutput,
   CredentialExposureDecisionEvent,
-} from '../../contracts/index.js';
+} from '@llm-shield/agentics-contracts';
 
 /**
  * Agent identity constants
@@ -161,4 +161,4 @@ export async function detectCredentials(
 }
 
 // Import for type re-export
-import type { CredentialType } from '../../contracts/index.js';
+import type { CredentialType } from '@llm-shield/agentics-contracts';

@@ -9,7 +9,7 @@
  * Raw credentials are NEVER stored or transmitted.
  */
 
-import type { CredentialType } from '../../contracts/index.js';
+import type { CredentialType } from '@llm-shield/agentics-contracts';
 
 /**
  * Credential pattern interface

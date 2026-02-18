@@ -5,7 +5,7 @@
  * Raw matched content is NEVER persisted to ruvector-service.
  */
 
-import type { Severity } from '../../../contracts/index.js';
+import type { Severity } from '@llm-shield/agentics-contracts';
 
 // =============================================================================
 // PATTERN INTERFACES

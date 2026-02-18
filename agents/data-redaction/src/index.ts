@@ -32,7 +32,7 @@ import {
   type AgentIdentity,
   type PolicyReference,
   type InvocationContext,
-} from '../../../contracts/index.js';
+} from '@llm-shield/agentics-contracts';
 import { Redactor, hashContent, type RedactionConfig, type RedactionResult } from './redactor.js';
 import { RuvectorClient, createRuvectorClient, type DecisionEventPayload } from './ruvector-client.js';
 import { TelemetryEmitter, createTelemetryEmitter, type RedactionTelemetry } from './telemetry.js';
