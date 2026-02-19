@@ -19,6 +19,7 @@
  */
 
 import { createServer, IncomingMessage, ServerResponse } from 'http';
+import { randomUUID } from 'crypto';
 import { URL } from 'url';
 import {
   assertStartupRequirements,
@@ -768,6 +769,31 @@ async function startServer(): Promise<void> {
         case '/readiness':
           await handleReady(res, handlers);
           break;
+        case '/api/v1/scan': {
+          if (req.method !== 'POST') {
+            sendJson(res, { error: 'Method Not Allowed' }, 405);
+            break;
+          }
+          const scanBody = await parseBody(req) as Record<string, unknown> | null;
+          const executionId = (scanBody && typeof scanBody === 'object' && typeof (scanBody as Record<string, unknown>).execution_id === 'string')
+            ? (scanBody as Record<string, unknown>).execution_id as string
+            : randomUUID();
+
+          console.log(`[${SERVICE_NAME}] Inbound scan event: execution_id=${executionId} source=${(scanBody as Record<string, unknown>)?.source ?? 'unknown'} event_type=${(scanBody as Record<string, unknown>)?.event_type ?? 'unknown'}`);
+
+          // Process asynchronously — fire and forget
+          setImmediate(() => {
+            try {
+              console.log(`[${SERVICE_NAME}] Processing scan event ${executionId} asynchronously`);
+              // Future: dispatch scan payload to agent pipeline
+            } catch (err) {
+              console.error(`[${SERVICE_NAME}] Async scan processing error for ${executionId}:`, err);
+            }
+          });
+
+          sendJson(res, { status: 'accepted', execution_id: executionId }, 202);
+          break;
+        }
         default: {
           // Agent dispatch: extract execution context and create repo span
           // parent_span_id is REQUIRED -- reject 400 if missing
