@@ -1,0 +1,36 @@
+{
+  "name": "@llm-shield/functions",
+  "version": "1.0.0",
+  "description": "Cloud Function entry point for shield-agents",
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "npx functions-framework --target=api --signature-type=http",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.3.0",
+    "express": "^4.18.2",
+    "@llm-shield/lib": "file:../lib",
+    "@llm-shield/agentics-contracts": "file:../contracts",
+    "@llm-shield/prompt-injection-detection": "file:../prompt-injection-detection",
+    "@llm-shield/pii-detection": "file:../pii-detection",
+    "@llm-shield/data-redaction": "file:../data-redaction",
+    "@llm-shield/secrets-leakage-detection": "file:../secrets-leakage-detection",
+    "@llm-shield/toxicity-detection": "file:../toxicity-detection",
+    "@llm-shield/safety-boundary": "file:../safety-boundary",
+    "@llm-shield/content-moderation": "file:../content-moderation",
+    "@llm-shield/model-abuse-detection": "file:../model-abuse-detection",
+    "@llm-shield/credential-exposure-detection": "file:../credential-exposure-detection"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

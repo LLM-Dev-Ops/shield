@@ -65,7 +65,7 @@ function parseArgs(args: string[]): CliArgs {
 
       case '--sensitivity':
       case '-s':
-        result.sensitivity = parseFloat(args[++i]);
+        result.sensitivity = parseFloat(args[++i] ?? '');
         if (isNaN(result.sensitivity) || result.sensitivity < 0 || result.sensitivity > 1) {
           console.error('Error: sensitivity must be between 0 and 1');
           process.exit(1);
@@ -74,7 +74,7 @@ function parseArgs(args: string[]): CliArgs {
 
       case '--threshold':
       case '-t':
-        result.threshold = parseFloat(args[++i]);
+        result.threshold = parseFloat(args[++i] ?? '');
         if (isNaN(result.threshold) || result.threshold < 0 || result.threshold > 1) {
           console.error('Error: threshold must be between 0 and 1');
           process.exit(1);
@@ -82,7 +82,7 @@ function parseArgs(args: string[]): CliArgs {
         break;
 
       case '--categories':
-        result.categories = args[++i].split(',') as ModelAbuseCategory[];
+        result.categories = (args[++i] ?? '').split(',') as ModelAbuseCategory[];
         break;
 
       case '--format':
@@ -96,11 +96,11 @@ function parseArgs(args: string[]): CliArgs {
         break;
 
       case '--request-rate':
-        result.requestRate = parseFloat(args[++i]);
+        result.requestRate = parseFloat(args[++i] ?? '');
         break;
 
       case '--session-requests':
-        result.sessionRequests = parseInt(args[++i], 10);
+        result.sessionRequests = parseInt(args[++i] ?? '', 10);
         break;
 
       case '--automated':
@@ -113,7 +113,7 @@ function parseArgs(args: string[]): CliArgs {
         break;
 
       default:
-        if (arg.startsWith('-')) {
+        if (arg?.startsWith('-')) {
           console.error(`Unknown option: ${arg}`);
           process.exit(1);
         }

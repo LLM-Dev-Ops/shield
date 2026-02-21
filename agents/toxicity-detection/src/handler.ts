@@ -95,8 +95,8 @@ export function createHandler() {
           caller_id: body.caller_id,
           policies: body.policies,
         },
-        sensitivity: body.sensitivity,
-        threshold: body.threshold,
+        sensitivity: body.sensitivity ?? 0.5,
+        threshold: body.threshold ?? 0.7,
         detect_categories: body.detect_categories as any,
       };
 

@@ -341,6 +341,12 @@ export async function handleCliInvocation(options: CliOptions): Promise<void> {
       content_source: 'user_input',
     },
     sensitivity: options.sensitivity ?? 0.5,
+    threshold: 0.7,
+    detect_password_patterns: true,
+    detect_username_patterns: true,
+    detect_auth_headers: true,
+    detect_credential_pairs: true,
+    min_password_length: 6,
   };
 
   // Run detection

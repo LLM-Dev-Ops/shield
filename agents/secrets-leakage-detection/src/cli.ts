@@ -178,10 +178,10 @@ async function runTest(args: ParsedArgs): Promise<string> {
       timestamp: new Date().toISOString(),
       content_source: 'user_input',
     },
-    ...(args.sensitivity !== undefined && { sensitivity: args.sensitivity }),
+    sensitivity: args.sensitivity ?? 0.5,
     ...(args.categories !== undefined && { detect_categories: args.categories }),
-    ...(args.entropyDetection !== undefined && { entropy_detection: args.entropyDetection }),
-    ...(args.entropyThreshold !== undefined && { entropy_threshold: args.entropyThreshold }),
+    entropy_detection: args.entropyDetection ?? true,
+    entropy_threshold: args.entropyThreshold ?? 4.5,
   };
 
   const result = await handleDetection(input, { skipPersistence: true });

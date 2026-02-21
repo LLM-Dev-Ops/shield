@@ -161,8 +161,8 @@ async function runTest(options: CliOptions): Promise<void> {
       timestamp: new Date().toISOString(),
       content_source: 'user_input' as const,
     },
-    sensitivity: options.sensitivity,
-    threshold: options.threshold,
+    sensitivity: options.sensitivity ?? 0.5,
+    threshold: options.threshold ?? 0.7,
     detect_categories: options.categories,
   };
 

@@ -162,7 +162,7 @@ async function runTest(options: CliOptions): Promise<void> {
       timestamp: new Date().toISOString(),
       content_source: 'user_input' as const,
     },
-    sensitivity: options.sensitivity,
+    sensitivity: options.sensitivity ?? 0.5,
     detect_types: options.types,
     countries: options.countries,
   };

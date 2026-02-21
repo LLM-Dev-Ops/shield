@@ -4,6 +4,7 @@
   "private": true,
   "description": "LLM-Shield Agent Implementations",
   "type": "module",
+  "main": "functions/dist/index.js",
   "workspaces": [
     "contracts",
     "lib",
@@ -16,13 +17,17 @@
     "content-moderation",
     "model-abuse-detection",
     "credential-exposure-detection",
-    "service"
+    "service",
+    "functions"
   ],
   "scripts": {
+    "gcp-build": "npm run build -w @llm-shield/agentics-contracts && npm run build -w @llm-shield/lib && npm run build -w @llm-shield/prompt-injection-detection && npm run build -w @llm-shield/pii-detection-agent && npm run build -w @llm-shield/data-redaction-agent && npm run build -w @llm-shield/secrets-leakage-detection-agent && npm run build -w @llm-shield/toxicity-detection && npm run build -w @llm-shield/safety-boundary && npm run build -w @llm-shield/content-moderation-agent && npm run build -w @llm-shield/model-abuse-detection-agent && npm run build -w @llm-shield/credential-exposure-detection-agent && npm run build -w @llm-shield/functions",
     "build": "npm run build --workspaces",
     "build:contracts": "npm run build -w @llm-shield/agentics-contracts",
     "build:agents": "npm run build -w @llm-shield/prompt-injection-detection",
     "build:content-moderation": "npm run build -w @llm-shield/content-moderation-agent",
+    "build:functions": "npm run build -w @llm-shield/functions",
+    "deploy": "gcloud functions deploy shield-agents --runtime nodejs20 --trigger-http --allow-unauthenticated --region us-central1 --project agentics-dev --entry-point api --memory 512MB --timeout 60s --source .",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present",

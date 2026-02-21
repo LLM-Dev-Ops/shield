@@ -406,7 +406,7 @@ export async function handleRequest(request: Request): Promise<Response> {
 
     // Create agent and process
     const agent = new DataRedactionAgent();
-    const result = await agent.process(body);
+    const result = await agent.process(body as DataRedactionInput);
 
     // Check if error
     const isError = 'code' in result;
@@ -474,10 +474,16 @@ export async function handleCli(
           timestamp: new Date().toISOString(),
           content_source: 'user_input',
         },
-        sensitivity: options.sensitivity,
-        redaction_strategy: options.strategy as any,
+        sensitivity: options.sensitivity ?? 0.7,
+        redaction_strategy: options.strategy as any ?? 'mask',
         pii_types: options.piiTypes as any,
         secret_types: options.secretTypes as any,
+        detect_pii: true,
+        detect_secrets: true,
+        detect_credentials: true,
+        min_confidence_threshold: 0.8,
+        return_redacted_content: true,
+        partial_mask_chars: 4,
       };
 
       const result = await agent.process(input);
