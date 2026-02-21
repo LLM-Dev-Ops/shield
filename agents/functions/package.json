@@ -5,7 +5,7 @@
   "type": "module",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "node -e \"const{execSync}=require('child_process');execSync('npx esbuild index.ts --outdir=dist --format=esm --platform=node --target=node20',{stdio:'inherit'})\"",
     "start": "npx functions-framework --target=api --signature-type=http",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"

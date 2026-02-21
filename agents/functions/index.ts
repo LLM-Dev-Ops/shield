@@ -44,7 +44,7 @@ const AGENT_REGISTRY: AgentEntry[] = [
     name: 'Prompt Injection Detection',
     description: 'Detects prompt injection attempts in LLM input content',
     load: async () => {
-      const mod = await import('../prompt-injection-detection/dist/agent.js');
+      const mod = await import('../../prompt-injection-detection/dist/agent.js');
       const agent = mod.createAgent();
       return async (payload: any, context: any) => {
         const input = {
@@ -68,7 +68,7 @@ const AGENT_REGISTRY: AgentEntry[] = [
     name: 'PII Detection',
     description: 'Detects personally identifiable information',
     load: async () => {
-      const mod = await import('../pii-detection/dist/agent.js');
+      const mod = await import('../../pii-detection/dist/agent.js');
       const agent = new mod.PIIDetectionAgent({});
       return async (payload: any, _context: any) => agent.detect(payload);
     },
@@ -78,7 +78,7 @@ const AGENT_REGISTRY: AgentEntry[] = [
     name: 'Data Redaction',
     description: 'Redacts sensitive data from content',
     load: async () => {
-      const mod = await import('../data-redaction/dist/index.js');
+      const mod = await import('../../data-redaction/dist/index.js');
       const agent = new mod.DataRedactionAgent();
       return async (payload: any, context: any) => {
         const input = {
@@ -109,7 +109,7 @@ const AGENT_REGISTRY: AgentEntry[] = [
     name: 'Secrets Leakage',
     description: 'Detects API keys and secrets leakage',
     load: async () => {
-      const mod = await import('../secrets-leakage-detection/dist/handler.js');
+      const mod = await import('../../secrets-leakage-detection/dist/handler.js');
       return async (payload: any, _context: any) => mod.handleDetection(payload);
     },
   },
@@ -118,7 +118,7 @@ const AGENT_REGISTRY: AgentEntry[] = [
     name: 'Toxicity Detection',
     description: 'Detects toxic content',
     load: async () => {
-      const mod = await import('../toxicity-detection/dist/agent.js');
+      const mod = await import('../../toxicity-detection/dist/agent.js');
       const agent = new mod.ToxicityDetectionAgent({});
       return async (payload: any, _context: any) => agent.detect(payload);
     },
@@ -128,7 +128,7 @@ const AGENT_REGISTRY: AgentEntry[] = [
     name: 'Safety Boundary',
     description: 'Enforces safety boundaries',
     load: async () => {
-      const mod = await import('../safety-boundary/dist/handler.js');
+      const mod = await import('../../safety-boundary/dist/handler.js');
       return async (payload: any, _context: any) => {
         const edgeReq = {
           method: 'POST',
@@ -147,7 +147,7 @@ const AGENT_REGISTRY: AgentEntry[] = [
     name: 'Content Moderation',
     description: 'Content moderation enforcement',
     load: async () => {
-      const mod = await import('../content-moderation/dist/handler.js');
+      const mod = await import('../../content-moderation/dist/handler.js');
       return async (payload: any, _context: any) => {
         const edgeReq = {
           method: 'POST',
@@ -166,7 +166,7 @@ const AGENT_REGISTRY: AgentEntry[] = [
     name: 'Model Abuse Detection',
     description: 'Detects model abuse patterns',
     load: async () => {
-      const mod = await import('../model-abuse-detection/dist/handler.js');
+      const mod = await import('../../model-abuse-detection/dist/handler.js');
       return async (payload: any, _context: any) => mod.handleDetection(payload);
     },
   },
@@ -175,7 +175,7 @@ const AGENT_REGISTRY: AgentEntry[] = [
     name: 'Credential Exposure',
     description: 'Detects exposed credentials',
     load: async () => {
-      const mod = await import('../credential-exposure-detection/dist/handler.js');
+      const mod = await import('../../credential-exposure-detection/dist/handler.js');
       return async (payload: any, _context: any) => mod.handleDetection(payload);
     },
   },
@@ -276,8 +276,15 @@ for (const entry of AGENT_REGISTRY) {
     } catch (error) {
       layers_executed.push('error_handling');
 
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({
+      const message = error instanceof Error
+        ? error.message
+        : typeof error === 'object' && error !== null
+          ? JSON.stringify(error)
+          : String(error);
+      const status = (typeof error === 'object' && error !== null && 'code' in error)
+        ? 400
+        : 500;
+      res.status(status).json({
         error: message,
         execution_metadata,
         layers_executed,
