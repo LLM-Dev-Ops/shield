@@ -1,0 +1,25 @@
+# Upload exclusions for `gcloud builds submit` / `gcloud run deploy --source`.
+#
+# NOTE 1: this file overrides the .gitignore-derived default. Cargo.lock is
+#         gitignored but MUST be uploaded — the Dockerfile COPYs it.
+# NOTE 2: leading "/" anchors each pattern to the repo root. Do NOT drop it:
+#         an unanchored "benchmarks/" or "models/" also matches
+#         crates/*/src/benchmarks/ and crates/*/src/models/ and will break
+#         the build with a misleading E0583 compile error.
+.git/
+.github/
+/target/
+**/target/
+**/node_modules/
+/secrets/
+/models/
+/packages/
+/agents/
+/benchmarks/
+/examples/
+/monitoring/
+/plans/
+/docs/
+*.log
+.env
+.env.*

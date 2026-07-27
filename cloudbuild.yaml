@@ -1,0 +1,43 @@
+# Build entrypoint for llm-shield. See docs/adr/ADR-0002.
+#
+# Deploy is deliberately NOT part of this config:
+#   gcloud builds submit --project=agentics-dev --config=cloudbuild.yaml .
+#   gcloud run deploy llm-shield --project=agentics-dev --region=us-central1 \
+#     --image=us-central1-docker.pkg.dev/agentics-dev/cloud-run-source-deploy/llm-shield:latest
+#
+# No machineType override: the sibling llm-orchestrator workspace builds
+# cold in ~7m44s on the default machine (ADR-0003 Finding 2). Add one only
+# if a measured build time here justifies the cost.
+timeout: 2700s
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/agentics-dev/secrets/github-infra-read/versions/latest
+      env: GH_TOKEN
+
+steps:
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    secretEnv: ['GH_TOKEN']
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        trap 'rm -f /workspace/gh_token' EXIT
+        printf '%s' "$$GH_TOKEN" > /workspace/gh_token
+        DOCKER_BUILDKIT=1 docker build \
+          --secret id=gh_token,src=/workspace/gh_token \
+          -t "$_IMAGE:$SHORT_SHA" \
+          -t "$_IMAGE:latest" \
+          .
+
+substitutions:
+  _IMAGE: us-central1-docker.pkg.dev/agentics-dev/cloud-run-source-deploy/llm-shield
+
+images:
+  - '$_IMAGE:$SHORT_SHA'
+  - '$_IMAGE:latest'

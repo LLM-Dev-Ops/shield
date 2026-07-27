@@ -1,22 +1,33 @@
+# syntax=docker/dockerfile:1.7
 # Multi-stage Dockerfile for LLM Shield API
 # Optimizes for size (<50MB), security (distroless), and build speed (layer caching)
 #
-# Build: docker build -t llm-shield-api:latest .
+# The workspace pulls 16 crates from the private repo LLM-Dev-Ops/infra, so the
+# build requires a GitHub token with Contents:read supplied as a BuildKit secret.
+#
+# Build: DOCKER_BUILDKIT=1 docker build --secret id=gh_token,src=<token-file> \
+#          -t llm-shield-api:latest .
 # Run:   docker run -p 8080:8080 llm-shield-api:latest
 
 # ==============================================================================
 # Stage 1: Build Environment
 # ==============================================================================
-FROM rust:1.93-slim-bookworm AS builder
+# Debian 13 (glibc 2.41), NOT bookworm (2.36): the `ort` crate links a prebuilt
+# ONNX Runtime that references __isoc23_strtol/strtoll/strtoull, added in glibc
+# 2.38. On bookworm the final link fails with undefined symbols. The runtime
+# stage below must stay on the matching debian13 distroless. See ADR-0002.
+FROM rust:1.93-slim-trixie AS builder
 
 WORKDIR /build
 
-# Install build dependencies
+# Install build dependencies.
+# git: rust:slim does not ship it, and the url.insteadOf rewrite below needs it.
 RUN apt-get update && apt-get install -y \
     pkg-config \
     libssl-dev \
     curl \
     g++ \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy workspace configuration and lockfile
@@ -58,16 +69,32 @@ RUN for crate in llm-shield-core llm-shield-models llm-shield-nlp llm-shield-sca
     mkdir -p crates/llm-shield-cloud/benches && \
     echo "fn main() {}" > crates/llm-shield-cloud/benches/cloud_bench.rs
 
-# Build dependencies only (this layer will be cached)
-RUN cargo build --release --bin llm-shield-api && \
+# Build dependencies only (this layer will be cached).
+# The workspace depends on the private repo github.com/LLM-Dev-Ops/infra. The
+# token arrives as a BuildKit secret mounted only for the duration of this RUN
+# (tmpfs, never a layer) and the url.insteadOf rewrite is unset before the
+# layer commits, so the credential never reaches the image. See ADR-0002.
+RUN --mount=type=secret,id=gh_token \
+    git config --global \
+      url."https://x-access-token:$(cat /run/secrets/gh_token)@github.com/".insteadOf \
+      "https://github.com/" && \
+    cargo build --release --bin llm-shield-api && \
     rm -rf target/release/deps/llm_shield* target/release/deps/llm_security* \
-           target/release/deps/libllm_shield* target/release/deps/libllm_security*
+           target/release/deps/libllm_shield* target/release/deps/libllm_security* && \
+    git config --global --unset-all \
+      url."https://x-access-token:$(cat /run/secrets/gh_token)@github.com/".insteadOf
 
 # Copy actual source code
 COPY crates ./crates
 
 # Build the application
-RUN cargo build --release --bin llm-shield-api
+RUN --mount=type=secret,id=gh_token \
+    git config --global \
+      url."https://x-access-token:$(cat /run/secrets/gh_token)@github.com/".insteadOf \
+      "https://github.com/" && \
+    cargo build --release --bin llm-shield-api && \
+    git config --global --unset-all \
+      url."https://x-access-token:$(cat /run/secrets/gh_token)@github.com/".insteadOf
 
 # Strip debug symbols to reduce binary size
 RUN strip target/release/llm-shield-api
@@ -75,7 +102,8 @@ RUN strip target/release/llm-shield-api
 # ==============================================================================
 # Stage 2: Runtime Environment (Distroless for Security)
 # ==============================================================================
-FROM gcr.io/distroless/cc-debian12
+# Must match the builder's Debian release (glibc 2.41) — see the builder note.
+FROM gcr.io/distroless/cc-debian13
 
 # Metadata
 LABEL maintainer="LLM Shield Team"

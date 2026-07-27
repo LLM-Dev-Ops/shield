@@ -1,6 +1,7 @@
 # Rust
 target/
-Cargo.lock
+# Cargo.lock is intentionally committed: llm-shield-api is a deployable binary,
+# and the container build COPYs it (see docs/adr/ADR-0002).
 **/*.rs.bk
 *.pdb
 
