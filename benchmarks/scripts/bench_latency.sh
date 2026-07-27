@@ -23,7 +23,7 @@ BENCHMARK_ROOT="$(dirname "$SCRIPT_DIR")"
 PROJECT_ROOT="$(dirname "$BENCHMARK_ROOT")"
 DATA_DIR="$BENCHMARK_ROOT/data"
 RESULTS_DIR="$BENCHMARK_ROOT/results"
-PYTHON_RUNNER="$SCRIPT_DIR/bench_latency_runner.py"
+PYTHON_RUNNER="$SCRIPT_DIR/simulate_latency_benchmark.py"
 
 # Colors for output
 RED='\033[0;31m'

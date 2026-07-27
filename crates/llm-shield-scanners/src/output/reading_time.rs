@@ -64,7 +64,7 @@ impl Default for ReadingTimeConfig {
 /// let scanner = ReadingTime::new(config)?;
 ///
 /// let response = "Short.";
-/// let result = scanner.scan_output("", response, &vault).await?;
+/// let result = scanner.scan_output("", &response, &vault).await?;
 /// assert!(!result.is_valid); // Too short
 /// ```
 pub struct ReadingTime {
@@ -274,7 +274,7 @@ mod tests {
 
         // About 30 words = ~9 seconds reading time at 200 WPM
         let response = "This is a moderate length response with enough content to be useful but not overly verbose. It should pass the reading time validation without any issues. The response provides helpful information in a concise manner.";
-        let result = scanner.scan_output("", response, &vault).await.unwrap();
+        let result = scanner.scan_output("", &response, &vault).await.unwrap();
 
         assert!(result.is_valid);
         assert!(result.metadata.contains_key("reading_time_seconds"));
@@ -286,7 +286,7 @@ mod tests {
         let vault = Vault::new();
 
         let response = "Short.";
-        let result = scanner.scan_output("", response, &vault).await.unwrap();
+        let result = scanner.scan_output("", &response, &vault).await.unwrap();
 
         assert!(!result.is_valid);
         assert!(result.entities.iter().any(|e| {
@@ -306,7 +306,7 @@ mod tests {
 
         // Generate very long response (>100 words = >30 seconds)
         let response = "This is a very long response. ".repeat(150);
-        let result = scanner.scan_output("", response, &vault).await.unwrap();
+        let result = scanner.scan_output("", &response, &vault).await.unwrap();
 
         assert!(!result.is_valid);
         assert!(result.entities.iter().any(|e| {
@@ -325,11 +325,17 @@ mod tests {
         let vault = Vault::new();
 
         let response = "This is a test response with twenty words in total. " .repeat(2);
-        let result = scanner.scan_output("", response, &vault).await.unwrap();
+        let result = scanner.scan_output("", &response, &vault).await.unwrap();
 
         // At 100 WPM, 20 words = 12 seconds
         assert!(result.is_valid);
-        let reading_time = result.metadata.get("reading_time_seconds").unwrap().parse::<u32>().unwrap();
+        let reading_time = result
+            .metadata
+            .get("reading_time_seconds")
+            .and_then(|v| v.as_str())
+            .unwrap()
+            .parse::<u32>()
+            .unwrap();
         assert!(reading_time > 5 && reading_time < 60);
     }
 
@@ -339,7 +345,7 @@ mod tests {
         let vault = Vault::new();
 
         let response = "One two three four five six seven eight nine ten";
-        let result = scanner.scan_output("", response, &vault).await.unwrap();
+        let result = scanner.scan_output("", &response, &vault).await.unwrap();
 
         assert_eq!(result.metadata.get("word_count").unwrap(), "10");
     }
@@ -350,7 +356,7 @@ mod tests {
         let vault = Vault::new();
 
         let response = "First sentence. Second sentence! Third sentence?";
-        let result = scanner.scan_output("", response, &vault).await.unwrap();
+        let result = scanner.scan_output("", &response, &vault).await.unwrap();
 
         assert_eq!(result.metadata.get("sentence_count").unwrap(), "3");
     }
@@ -361,7 +367,7 @@ mod tests {
         let vault = Vault::new();
 
         let response = "";
-        let result = scanner.scan_output("", response, &vault).await.unwrap();
+        let result = scanner.scan_output("", &response, &vault).await.unwrap();
 
         assert!(!result.is_valid); // Empty is too short
         assert_eq!(result.metadata.get("word_count").unwrap(), "0");
@@ -379,7 +385,7 @@ mod tests {
 
         // Exactly at boundary: 10 words at 200 WPM = 3 seconds
         let response = "One two three four five six seven eight nine ten";
-        let result = scanner.scan_output("", response, &vault).await.unwrap();
+        let result = scanner.scan_output("", &response, &vault).await.unwrap();
 
         assert!(result.is_valid);
     }
@@ -396,7 +402,7 @@ mod tests {
 
         // Exactly at boundary: 20 words at 200 WPM = 6 seconds
         let response = "word ".repeat(20);
-        let result = scanner.scan_output("", response, &vault).await.unwrap();
+        let result = scanner.scan_output("", &response, &vault).await.unwrap();
 
         assert!(result.is_valid);
     }
@@ -431,7 +437,7 @@ mod tests {
         let vault = Vault::new();
 
         let response = "Hello World!"; // 10 non-whitespace chars
-        let result = scanner.scan_output("", response, &vault).await.unwrap();
+        let result = scanner.scan_output("", &response, &vault).await.unwrap();
 
         assert_eq!(result.metadata.get("char_count").unwrap(), "11");
     }

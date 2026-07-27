@@ -303,7 +303,13 @@ mod tests {
         let result = scanner.scan_output("", response, &vault).await.unwrap();
 
         assert!(result.is_valid);
-        let confidence: f32 = result.metadata.get("confidence_score").unwrap().parse().unwrap();
+        let confidence: f32 = result
+            .metadata
+            .get("confidence_score")
+            .and_then(|v| v.as_str())
+            .unwrap()
+            .parse()
+            .unwrap();
         assert!(confidence > 0.8);
     }
 
@@ -407,7 +413,13 @@ mod tests {
 
         assert!(!result.is_valid);
         // Very low confidence should be high severity
-        let confidence: f32 = result.metadata.get("confidence_score").unwrap().parse().unwrap();
+        let confidence: f32 = result
+            .metadata
+            .get("confidence_score")
+            .and_then(|v| v.as_str())
+            .unwrap()
+            .parse()
+            .unwrap();
         assert!(confidence < 0.3);
     }
 
@@ -431,7 +443,13 @@ mod tests {
         let response = "might might might might might";
         let result = scanner.scan_output("", response, &vault).await.unwrap();
 
-        let confidence: f32 = result.metadata.get("confidence_score").unwrap().parse().unwrap();
+        let confidence: f32 = result
+            .metadata
+            .get("confidence_score")
+            .and_then(|v| v.as_str())
+            .unwrap()
+            .parse()
+            .unwrap();
         // Should not go to 0 due to diminishing returns
         assert!(confidence > 0.0);
     }

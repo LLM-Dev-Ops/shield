@@ -147,7 +147,7 @@ static DATE_OF_BIRTH_PATTERN: LazyLock<Regex> = LazyLock::new(|| {
 /// let scanner = Sensitive::new(config)?;
 /// let result = scanner.scan_output("", response, &vault).await?;
 /// assert!(result.is_valid); // Redacted
-/// assert!(result.sanitized_input.contains("[REDACTED]"));
+/// assert!(result.sanitized_text.contains("[REDACTED]"));
 /// ```
 pub struct Sensitive {
     config: SensitiveConfig,
@@ -579,8 +579,8 @@ mod tests {
         let result = scanner.scan_output("", response, &vault).await.unwrap();
 
         assert!(result.is_valid); // Should pass with redaction
-        assert!(result.sanitized_input.contains("[REDACTED]"));
-        assert!(!result.sanitized_input.contains("test@example.com"));
+        assert!(result.sanitized_text.contains("[REDACTED]"));
+        assert!(!result.sanitized_text.contains("test@example.com"));
     }
 
     #[tokio::test]
@@ -666,7 +666,7 @@ mod tests {
         let response = "Email: test@example.com";
         let result = scanner.scan_output("", response, &vault).await.unwrap();
 
-        assert!(result.sanitized_input.contains("***"));
-        assert!(!result.sanitized_input.contains("[REDACTED]"));
+        assert!(result.sanitized_text.contains("***"));
+        assert!(!result.sanitized_text.contains("[REDACTED]"));
     }
 }
