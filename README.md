@@ -6,7 +6,9 @@
 
 **Enterprise-grade LLM security framework in Rust with WebAssembly deployment.**
 
-A high-performance rewrite of [llm-guard](https://github.com/protectai/llm-guard) in Rust, delivering **10x faster** prompt and output scanning for Large Language Model applications. Deploy anywhere: native Rust, browsers, edge workers, or serverless platforms.
+A rewrite of [llm-guard](https://github.com/protectai/llm-guard) in Rust for prompt and output scanning of Large Language Model applications. Deploy anywhere: native Rust, browsers, edge workers, or serverless platforms.
+
+> ⚠️ **Performance and ML claims are being re-established.** Previously published speedup figures were produced by a Python simulation, not by executing this Rust code, and have been withdrawn pending real measurement. See [ADR-0001](docs/adr/ADR-0001-real-ml-detection-and-honest-benchmarks.md) and [Detection Methods](#-detection-methods) below.
 
 > 🚀 **Migrated from Python to Rust/WASM using [Portalis](https://github.com/EmergenceAI/Portalis)** - An AI-powered code migration framework
 
@@ -15,16 +17,16 @@ A high-performance rewrite of [llm-guard](https://github.com/protectai/llm-guard
 ## ✨ Features
 
 - 🔒 **22 Production-Ready Scanners** - 12 input + 10 output validators
-- ⚡ **10x Performance** - Sub-millisecond scanning with zero-copy processing
+- ⚡ **Native Rust Scanning** - Zero-copy processing (speedup vs. Python not yet measured; see ADR-0001)
 - 🌐 **Universal Deployment** - Native, WASM, browser, edge, serverless
 - 🦀 **Rust SDK** - Enterprise-grade SDK with fluent builder API, presets, and async scanning
 - 📦 **NPM Package** - Official TypeScript/JavaScript package (llm-shield-core@0.2.1) with full WASM bindings
 - 🧪 **Enterprise Testing** - 435+ comprehensive tests (375 Rust + 60 TypeScript) with 90%+ coverage
 - 🎯 **Type-Safe** - Compile-time guarantees with Rust's type system + TypeScript definitions
 - 🔌 **Modular Design** - Use only what you need, tree-shakeable WASM
-- 🤖 **ML-Ready** - ONNX Runtime integration for transformer models
+- 🤖 **ML-Ready (library only)** - `llm-shield-models` provides working ONNX Runtime integration, but **no scanner is wired to it yet**. All shipped scanners are heuristic. ROADMAP — NOT YET ACTIVE.
 - 🔐 **Secret Detection** - 40+ patterns powered by [SecretScout](https://github.com/globalbusinessadvisors/SecretScout)
-- 🤖 **PII Detection** - ML-based Named Entity Recognition with DeBERTa-v3 (95-99% accuracy)
+- 🤖 **PII Detection (NER)** - DeBERTa-v3 Named Entity Recognition. ROADMAP — NOT YET ACTIVE: the detector has no production call site and no accuracy figure has been measured on this code.
 - 🔒 **Authentication** - API key auth with argon2id hashing and multi-tier access control
 - ⚡ **Rate Limiting** - Multi-window rate limiting (minute/hour/day) with concurrent request control
 - 🚀 **REST API** - Production-ready Axum HTTP server with authentication, rate limiting, and scanner endpoints
@@ -35,21 +37,40 @@ A high-performance rewrite of [llm-guard](https://github.com/protectai/llm-guard
 
 ## 📊 Performance Comparison
 
-Benchmarked against Python [llm-guard](https://github.com/protectai/llm-guard) v0.3.x:
+**Withdrawn pending real measurement.**
 
-| Metric | Python llm-guard | **LLM Shield (Rust)** | **Validated** | Improvement |
-|--------|------------------|----------------------|---------------|-------------|
-| **Latency** | 200-500ms | **0.03ms** (avg) | ✅ **23,815x faster** | **Validated** ⚡ |
-| **Throughput** | 100-400 req/sec | **15,500 req/sec** | ✅ **39-155x higher** | **Exceeds 100x target** 📈 |
-| **Memory** | 4-8GB | **145MB** (peak) | ✅ **14-20x lower** | **Exceeds 8-16x target** 💾 |
-| **Cold Start** | 10-30s | **<1s** | ✅ **10-30x faster** | **Validated** 🚀 |
-| **Binary Size** | 3-5GB (Docker) | **24MB** (native) / **1.2MB** (WASM) | ✅ **61-76x smaller** | **Validated** 📦 |
-| **CPU Usage** | High (Python GIL) | **Low** (parallel Rust) | ✅ **5-10x lower** | **Validated** ⚙️ |
+This section previously carried a comparison table against Python [llm-guard](https://github.com/protectai/llm-guard) v0.3.x reporting figures such as `0.03ms` latency, `23,815x faster`, and `15,500 req/sec`, all marked "Validated".
 
-> 🎯 **All performance claims validated** through comprehensive benchmarking framework with 1,000+ test iterations per scenario.
-> 📊 See [Benchmark Results](benchmarks/RESULTS.md) for detailed methodology and complete data.
+Those numbers did not come from this software. The latency figures were produced by `benchmarks/scripts/bench_latency_runner.py`, which is self-described as a *"Simulated Rust Implementation"* — it times a Python `re.search` loop and divides by a hardcoded Python baseline constant. No Rust code was executed. The throughput figure was a hardcoded input constant echoed back by a generator script; no server was contacted. The cited evidence, `benchmarks/RESULTS.md`, reports `0/18` benchmarks executed.
 
-*Environment: Simulated AWS c5.xlarge (4 vCPU, 8GB RAM), Ubuntu 22.04, Rust 1.75+*
+The table has therefore been removed rather than relabeled. Real figures will be published once the Criterion harness and load tests in ADR-0001 Phase 2 are run on disclosed physical hardware, comparing like for like.
+
+See [ADR-0001](docs/adr/ADR-0001-real-ml-detection-and-honest-benchmarks.md) for the full analysis and the standing rule now governing published numbers.
+
+---
+
+## 🔍 Detection Methods
+
+What each scanner actually runs today:
+
+| Scanner | Backend in shipped builds | ML status |
+|---------|---------------------------|-----------|
+| **PromptInjection** | Heuristic — fixed substring/pattern set | Roadmap (ADR-0001 Phase 3) |
+| **Toxicity** | Heuristic — keyword/pattern matching | Roadmap |
+| **Sentiment** | Heuristic — lexicon scoring | Roadmap |
+| **Secrets** | Regex pattern set (40+) | N/A — regex by design |
+| **PII / NER** | Not wired to any production path | Roadmap |
+
+`llm-shield-models` contains real, working ONNX Runtime inference code, but `llm-shield-scanners` does not depend on it, no model weights ship with this repository, and no scanner can currently reach it. Every scanner listed above is regex or heuristic.
+
+**Reading the audit trail.** Every `ScanResult` from `PromptInjection` carries two metadata fields describing what actually ran:
+
+- `detection_method` — `"heuristic"` or `"onnx-deberta"`, set by the code path that executed, never inferred from configuration.
+- `detection_mode_degraded` — `true` when ML detection was requested but heuristics ran instead. A degraded run also emits a `tracing::warn!`.
+
+Requesting ML with `use_fallback: false` when no model is available returns an `Err`. It will not return a heuristic result labeled as ML.
+
+**What heuristics do and do not give you.** Substring matching catches literal, unobfuscated injection attempts and is extremely fast. It has no semantic generalization and is expected to be evaded by paraphrase, translation, encoding, or typo perturbation. Choose it knowingly. Precision/recall for both paths will be published with the ADR-0001 Phase 2 measurements.
 
 ---
 
@@ -976,29 +997,20 @@ python validate_claims.py
 
 ### Benchmark Categories
 
-**1. Latency Benchmarks** (4 scenarios)
-- BanSubstrings: **0.0016ms** (p95) - 6,918x faster than Python
-- Regex (10 patterns): **0.097ms** (p95) - 224x faster
-- Secrets (40+ patterns): **0.062ms** (p95) - 1,841x faster
-- PromptInjection: **0.005ms** (p95) - 86,279x faster
+> ⚠️ **ESTIMATE — NOT MEASURED.** The latency and throughput figures below were generated by Python simulation scripts, not by executing this Rust code or contacting a running server. They are retained here only to describe what each benchmark category is intended to cover, and must not be cited as results. `benchmarks/RESULTS.md` reports `0/18` benchmarks executed. Real numbers land with ADR-0001 Phase 2.
 
-**2. Throughput Benchmarks**
-- Peak: **15,500 req/sec** at 100 concurrent connections
-- P50 latency: **1.89ms** (10x better than target)
-- P99 latency: **2.25ms** (44x better than target)
-- Error rate: **0.0%** under normal load
+**1. Latency Benchmarks** (4 scenarios) — *ESTIMATE — NOT MEASURED*
+- BanSubstrings, Regex (10 patterns), Secrets (40+ patterns), PromptInjection
 
-**3. Memory Usage**
-- Baseline (idle): **45.2 MB** (19.7x smaller than Python)
-- Under load: **128.7 MB** (14.3x smaller)
-- Peak memory: **145.3 MB** (71% below 500MB target)
-- Memory growth: **<3%/hour** (excellent stability)
+**2. Throughput Benchmarks** — *ESTIMATE — NOT MEASURED*
+- Peak requests/sec, P50/P99 latency, and error rate under concurrent load
 
-**4. Binary Size**
-- Native stripped: **24.3 MB** (51% below 50MB target)
-- WASM gzipped: **1.47 MB** (26.5% below 2MB target)
-- WASM brotli: **1.18 MB** (41% below target) ⭐
-- Docker image: **185 MB** vs Python 4,872 MB (26.3x smaller)
+**3. Memory Usage** — *ESTIMATE — NOT MEASURED*
+- Idle baseline, under load, peak, and growth over time
+
+**4. Binary Size** — *ESTIMATE — NOT MEASURED*
+- Native stripped, WASM gzipped, WASM brotli, Docker image
+- Note: these figures predate any ONNX Runtime or model weights being shipped, and will regress once ML is wired.
 
 ### Test Dataset
 
@@ -1120,7 +1132,7 @@ This project is a **complete rewrite** of [llm-guard](https://github.com/protect
 - **Rust Implementation:** ~42,000+ lines across 125+ files (includes benchmarking, REST API, NPM package, auth, rate limiting, dashboard)
 - **Migration Time:** 4 months using Portalis + SPARC methodology
 - **Test Coverage:** Increased from 70% → 90%+ (430+ Rust tests, 60+ TypeScript tests)
-- **Performance:** **Validated 10-100x improvement** across all metrics (23,815x for latency)
+- **Performance:** Not yet measured against Python llm-guard on real hardware (previous "validated 10-100x / 23,815x" figures were simulation output and have been withdrawn — see ADR-0001)
 - **Benchmark Infrastructure:** 12 scripts, 1,000 test prompts, 7 automated charts, 4,000+ lines of documentation
 - **NPM Package:** Full TypeScript API with 34 files, 6,500+ LOC, multi-target builds, automated CI/CD
 - **REST API:** Enterprise-grade HTTP API with 168 tests, rate limiting, API key authentication, multi-tier access control
