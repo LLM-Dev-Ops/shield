@@ -29,7 +29,7 @@ repository = "https://github.com/llm-shield/llm-shield-rs"
 [workspace.dependencies]
 # LLM-Dev-Ops upstream dependencies (Phase 2A - compile-time only)
 llm-policy-engine = { git = "https://github.com/LLM-Dev-Ops/policy-engine", branch = "main" }
-llm-config-manager = { git = "https://github.com/LLM-Dev-Ops/config-manager", branch = "main" }
+llm-config-core = { git = "https://github.com/LLM-Dev-Ops/config-manager", branch = "main" }
 
 # LLM-Dev-Ops Infra dependencies (Phase 2B - provider layer)
 infra-errors = { git = "https://github.com/LLM-Dev-Ops/infra", branch = "main" }
