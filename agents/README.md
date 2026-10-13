@@ -13,8 +13,8 @@ All agents in this directory:
 
 ## Available Agents
 
-| Agent | Classification | Decision Type | Description |
-|-------|----------------|---------------|-------------|
+| Agent                        | Classification | Decision Type                | Description                       |
+| ---------------------------- | -------------- | ---------------------------- | --------------------------------- |
 | `prompt-injection-detection` | DETECTION_ONLY | `prompt_injection_detection` | Detects prompt injection attempts |
 
 ## Agent Classifications
@@ -79,16 +79,16 @@ Every agent must emit a DecisionEvent with:
 
 ```typescript
 {
-  agent_id: string;           // Agent identifier
-  agent_version: string;      // Semantic version
-  decision_type: string;      // Type of decision
-  inputs_hash: string;        // SHA-256 hash of input (NOT raw content)
-  outputs: object;            // Sanitized outputs
-  confidence: number;         // Detection confidence (0-1)
-  constraints_applied: [];    // Policy references
-  execution_ref: string;      // UUID for tracing
-  timestamp: string;          // UTC ISO 8601
-  duration_ms: number;        // Execution time
+  agent_id: string; // Agent identifier
+  agent_version: string; // Semantic version
+  decision_type: string; // Type of decision
+  inputs_hash: string; // SHA-256 hash of input (NOT raw content)
+  outputs: object; // Sanitized outputs
+  confidence: number; // Detection confidence (0-1)
+  constraints_applied: []; // Policy references
+  execution_ref: string; // UUID for tracing
+  timestamp: string; // UTC ISO 8601
+  duration_ms: number; // Execution time
 }
 ```
 
@@ -135,6 +135,11 @@ Agents can be invoked by:
 - **LLM-Core bundles** - Via HTTP POST to `/detect`
 - **CLI** - Via `shield-agent` command
 - **Direct HTTP** - Via Edge Function URL
+
+Browser access to the unified Cloud Function is denied by default. Set
+`CORS_ALLOWED_ORIGINS` to a comma-separated list of exact HTTPS origins, for
+example `https://console.example.com,https://admin.example.com`. Requests
+without an `Origin` header remain available for server-to-server calls.
 
 Agents NEVER invoke:
 

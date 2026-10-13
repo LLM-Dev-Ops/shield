@@ -13,7 +13,7 @@ import type {
   CacheStats,
   ScannerType,
 } from './types';
-import { InitializationError, ScanError, TimeoutError, ValidationError } from './types';
+import { InitializationError, ScanError, ValidationError } from './types';
 import { hashText, createScanMetadata } from './utils';
 
 /**
@@ -255,7 +255,7 @@ export class LLMShield {
       throw new ValidationError('Input must be a non-empty array');
     }
 
-    const startTime = Date.now();
+    const startTime = performance.now();
     const results: ScanResult[] = [];
     const errors: Array<{ index: number; error: string }> = [];
 
@@ -267,13 +267,13 @@ export class LLMShield {
       chunks.push(inputs.slice(i, i + concurrency));
     }
 
-    for (const chunk of chunks) {
+    for (const [chunkIndex, chunk] of chunks.entries()) {
       const promises = chunk.map(async (input, idx) => {
         try {
           return await this.scanPrompt(input, options);
         } catch (error) {
           errors.push({
-            index: idx,
+            index: chunkIndex * concurrency + idx,
             error: error instanceof Error ? error.message : String(error),
           });
           // Return a failed result
@@ -288,7 +288,7 @@ export class LLMShield {
               description: `Scan failed: ${error instanceof Error ? error.message : String(error)}`,
             }],
             scannerResults: [],
-            metadata: createScanMetadata(Date.now() - startTime, 0, false),
+            metadata: createScanMetadata(performance.now() - startTime, 0, false),
           } as ScanResult;
         }
       });
@@ -297,7 +297,7 @@ export class LLMShield {
       results.push(...chunkResults);
     }
 
-    const totalTimeMs = Date.now() - startTime;
+    const totalTimeMs = performance.now() - startTime;
     const successCount = results.filter((r) => r.isValid || r.detections.length === 0).length;
     const failureCount = inputs.length - successCount;
 
@@ -520,7 +520,7 @@ export class LLMShield {
   private async executeScan(
     text: string,
     scanners: ScannerType[],
-    options: ScanOptions,
+    _options: ScanOptions,
     startTime: number
   ): Promise<ScanResult> {
     // TODO: Integrate with actual WASM scanners
@@ -638,3 +638,5 @@ export class LLMShield {
     return secrets;
   }
 }
+
+
