@@ -25,14 +25,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-24.04, macos-15, windows-2025]
-        node: [18.20.8, 20.19.5, 22.20.0]
+        node: [20.19.5, 22.20.0]
         exclude:
           - os: macos-15
-            node: 18.20.8
-          - os: macos-15
             node: 22.20.0
-          - os: windows-2025
-            node: 18.20.8
           - os: windows-2025
             node: 22.20.0
     defaults:

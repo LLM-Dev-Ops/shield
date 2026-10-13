@@ -113,8 +113,7 @@ export function isNode(): boolean {
  * Check if running in Deno environment
  */
 export function isDeno(): boolean {
-  // @ts-ignore
-  return typeof Deno !== 'undefined';
+  return 'Deno' in globalThis;
 }
 
 /**
@@ -126,3 +125,4 @@ export function getRuntime(): 'node' | 'browser' | 'deno' | 'unknown' {
   if (isBrowser()) return 'browser';
   return 'unknown';
 }
+

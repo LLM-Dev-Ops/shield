@@ -13,7 +13,7 @@ import type {
   CacheStats,
   ScannerType,
 } from './types';
-import { InitializationError, ScanError, TimeoutError, ValidationError } from './types';
+import { InitializationError, ScanError, ValidationError } from './types';
 import { hashText, createScanMetadata } from './utils';
 
 /**
@@ -520,7 +520,7 @@ export class LLMShield {
   private async executeScan(
     text: string,
     scanners: ScannerType[],
-    options: ScanOptions,
+    _options: ScanOptions,
     startTime: number
   ): Promise<ScanResult> {
     // TODO: Integrate with actual WASM scanners
@@ -638,3 +638,4 @@ export class LLMShield {
     return secrets;
   }
 }
+
