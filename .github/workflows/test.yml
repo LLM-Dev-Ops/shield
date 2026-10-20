@@ -38,14 +38,14 @@ jobs:
       - name: Execute both revisions, frozen anchors, signed lineage and benchmark
         working-directory: packages/core
         run: |
-          mkdir -p .metaharness
-          node security/evaluate-cache.mjs "$RUNNER_TEMP/shield-cache-baseline/packages/core" "$PWD" "$PWD/security/tools" .metaharness/cache-flywheel.json
-          node security/benchmark-cache.mjs "$RUNNER_TEMP/shield-cache-baseline/packages/core" "$PWD" .metaharness/cache-benchmark.json
+          mkdir -p cache-evidence
+          node security/evaluate-cache.mjs "$RUNNER_TEMP/shield-cache-baseline/packages/core" "$PWD" "$PWD/security/tools" cache-evidence/cache-flywheel.json
+          node security/benchmark-cache.mjs "$RUNNER_TEMP/shield-cache-baseline/packages/core" "$PWD" cache-evidence/cache-benchmark.json
       - name: Retain project-only synthetic cache receipts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: shield-cache-contract
-          path: packages/core/.metaharness/cache-*.json
+          path: packages/core/cache-evidence/cache-*.json
           if-no-files-found: error
           retention-days: 30
 
