@@ -1,0 +1,4 @@
+{
+  "private": true,
+  "dependencies": { "@metaharness/flywheel": "0.1.12" }
+}

@@ -17,6 +17,38 @@ env:
   CORE_DIRECTORY: packages/core
 
 jobs:
+  cache-contract:
+    name: Live Cache Contract and Signed Replay
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 20.19.5
+      - name: Prepare frozen baseline and locked tools
+        run: |
+          git worktree add --detach "$RUNNER_TEMP/shield-cache-baseline" 60bcd3c463228ee8c8ccadc4c7c560502d73e273
+          npm ci --ignore-scripts --prefix packages/core/security/tools
+          for root in "$RUNNER_TEMP/shield-cache-baseline/packages/core" "$GITHUB_WORKSPACE/packages/core"; do
+            (cd "$root" && npm ci --ignore-scripts && npm run build:rollup && npm run build:types)
+          done
+      - name: Execute both revisions, frozen anchors, signed lineage and benchmark
+        working-directory: packages/core
+        run: |
+          mkdir -p .metaharness
+          node security/evaluate-cache.mjs "$RUNNER_TEMP/shield-cache-baseline/packages/core" "$PWD" "$PWD/security/tools" .metaharness/cache-flywheel.json
+          node security/benchmark-cache.mjs "$RUNNER_TEMP/shield-cache-baseline/packages/core" "$PWD" .metaharness/cache-benchmark.json
+      - name: Retain project-only synthetic cache receipts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: shield-cache-contract
+          path: packages/core/.metaharness/cache-*.json
+          if-no-files-found: error
+          retention-days: 30
+
   test:
     name: Core on ${{ matrix.os }} with Node ${{ matrix.node }}
     runs-on: ${{ matrix.os }}
@@ -53,6 +85,9 @@ jobs:
 
       - name: Type check
         run: npm run typecheck
+
+      - name: Build independently tested wrapper
+        run: npm run build:rollup && npm run build:types
 
       - name: Run unit tests
         run: npm run test:unit

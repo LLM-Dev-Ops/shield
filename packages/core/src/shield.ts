@@ -14,7 +14,7 @@ import type {
   ScannerType,
 } from './types';
 import { InitializationError, ScanError, ValidationError } from './types';
-import { hashText, createScanMetadata } from './utils';
+import { createScanMetadata } from './utils';
 
 /**
  * Main LLMShield class providing high-level security scanning API
@@ -120,10 +120,10 @@ export class LLMShield {
     this.validateInput(prompt);
 
     const startTime = Date.now();
-    const cacheKey = this.getCacheKey(prompt, options);
+    const cacheKey = this.getCacheKey(prompt, options, 'input');
 
     // Check cache
-    if (!options.skipCache) {
+    if (cacheKey !== null) {
       const cached = this.getFromCache(cacheKey);
       if (cached) {
         this.cacheHits++;
@@ -149,7 +149,7 @@ export class LLMShield {
       );
 
       // Cache result
-      if (!options.skipCache) {
+      if (cacheKey !== null) {
         this.setCache(cacheKey, result);
       }
 
@@ -186,10 +186,10 @@ export class LLMShield {
     this.validateInput(output);
 
     const startTime = Date.now();
-    const cacheKey = this.getCacheKey(output, options);
+    const cacheKey = this.getCacheKey(output, options, 'output');
 
     // Check cache
-    if (!options.skipCache) {
+    if (cacheKey !== null) {
       const cached = this.getFromCache(cacheKey);
       if (cached) {
         this.cacheHits++;
@@ -215,7 +215,7 @@ export class LLMShield {
       );
 
       // Cache result
-      if (!options.skipCache) {
+      if (cacheKey !== null) {
         this.setCache(cacheKey, result);
       }
 
@@ -450,9 +450,25 @@ export class LLMShield {
     }
   }
 
-  private getCacheKey(text: string, options: ScanOptions): string {
-    const scanners = (options.scanners || this.config.scanners).sort().join(',');
-    return hashText(`${text}:${scanners}`);
+  private getCacheKey(
+    text: string,
+    options: ScanOptions,
+    category: 'input' | 'output'
+  ): string | null {
+    // Context can contain cycles or mutable objects. Do not serialize or reuse
+    // context-sensitive results, including future WASM-backed output scans.
+    if (
+      options.skipCache ||
+      options.context !== undefined ||
+      options.originalPrompt !== undefined ||
+      !(this.config.cache.maxSize > 0) ||
+      !(this.config.cache.ttlSeconds > 0)
+    ) {
+      return null;
+    }
+    const scanners = [...(options.scanners || this.config.scanners)].sort();
+    // Keep the exact text: a 32-bit hash is not a security cache identity.
+    return JSON.stringify([category, text, scanners]);
   }
 
   private getFromCache(key: string): ScanResult | null {
@@ -462,13 +478,16 @@ export class LLMShield {
     const now = Date.now();
     const age = (now - entry.timestamp) / 1000;
 
-    if (age > this.config.cache.ttlSeconds) {
+    if (age >= this.config.cache.ttlSeconds) {
       this.cache.delete(key);
       return null;
     }
 
+    // Refresh recency, not TTL. Callers must never own the cached object graph.
+    this.cache.delete(key);
+    this.cache.set(key, entry);
     return {
-      ...entry.result,
+      ...structuredClone(entry.result),
       metadata: {
         ...entry.result.metadata,
         cached: true,
@@ -486,7 +505,7 @@ export class LLMShield {
     }
 
     this.cache.set(key, {
-      result,
+      result: structuredClone(result),
       timestamp: Date.now(),
     });
   }
