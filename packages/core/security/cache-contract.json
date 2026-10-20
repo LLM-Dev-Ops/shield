@@ -1,0 +1,9 @@
+{
+  "id": "shield-cache-isolation-v1",
+  "baseline": "60bcd3c463228ee8c8ccadc4c7c560502d73e273",
+  "holdout": ["input-output", "output-input", "text-collision", "frozen-scanners", "scanner-order", "initial-result-ownership", "hit-result-ownership", "context-bypass", "original-prompt-bypass", "disabled-capacity", "disabled-ttl", "lru-refresh"],
+  "anchor": ["repeat-hit", "scanner-set-key", "skip-cache", "clear-cache", "input-validation", "injection-heuristic", "output-heuristic", "batch-order"],
+  "acceptance": {"holdout": 12, "anchor": 8, "originalAssertions": 42, "regressions": 0, "productionNpmVulnerabilities": 0},
+  "benchmark": {"alternatingTrials": 5, "noLatencyOrCostClaim": true},
+  "scope": "Actual built LLMShield wrapper cache behavior; current scanner heuristics, not WASM/model efficacy. No services, network, real secrets or service-owned persistence. Component promotion cannot authorize merge."
+}
