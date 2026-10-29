@@ -2,6 +2,17 @@
 
 Complete API documentation for @llm-shield/core.
 
+### Runtime scanner selection validation
+
+Unknown scanner names are rejected with `ValidationError` rather than silently
+discarded. This applies to constructor configuration and per-call `scanners`
+overrides in `scanPrompt()` and `scanOutput()`, including mixed known/unknown
+arrays. Per-call non-array values such as `null` are also rejected. Validation
+runs before cache lookup; empty arrays retain the existing default-scanner
+behavior and caller arrays are not mutated. Use `listScanners()` for names.
+Acceptance of a known name does not establish that its WASM/model implementation
+is available; this change concerns selection validation, not detection efficacy.
+
 ## Table of Contents
 
 - [LLMShield Class](#llmshield-class)

@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Reject invalid runtime scanner selections before caching or scanning instead of
+  silently discarding unknown names and potentially returning a valid empty scan.
 - Isolate input/output cache identities, preserve exact text and caller scanner arrays,
   copy cached result graphs, bypass context-sensitive/disabled caching and refresh LRU recency.
 
