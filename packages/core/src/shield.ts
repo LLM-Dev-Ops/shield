@@ -59,6 +59,8 @@ export class LLMShield {
       timeout: config.timeout || 30000,
     };
 
+    // Validate JavaScript callers as well as statically typed callers.
+    this.getScannersToRun(this.config.scanners, 'input');
     this.cache = new Map();
     this.initPromise = this.initialize();
   }
@@ -120,6 +122,10 @@ export class LLMShield {
     this.validateInput(prompt);
 
     const startTime = Date.now();
+    const scannersToRun = this.getScannersToRun(
+      options.scanners === undefined ? this.config.scanners : options.scanners,
+      'input'
+    );
     const cacheKey = this.getCacheKey(prompt, options, 'input');
 
     // Check cache
@@ -134,12 +140,6 @@ export class LLMShield {
     this.cacheMisses++;
 
     try {
-      // Determine which scanners to run
-      const scannersToRun = this.getScannersToRun(
-        options.scanners || this.config.scanners,
-        'input'
-      );
-
       // Execute scan
       const result = await this.executeScan(
         prompt,
@@ -186,6 +186,10 @@ export class LLMShield {
     this.validateInput(output);
 
     const startTime = Date.now();
+    const scannersToRun = this.getScannersToRun(
+      options.scanners === undefined ? this.config.scanners : options.scanners,
+      'output'
+    );
     const cacheKey = this.getCacheKey(output, options, 'output');
 
     // Check cache
@@ -200,12 +204,6 @@ export class LLMShield {
     this.cacheMisses++;
 
     try {
-      // Determine which scanners to run
-      const scannersToRun = this.getScannersToRun(
-        options.scanners || this.config.scanners,
-        'output'
-      );
-
       // Execute scan
       const result = await this.executeScan(
         output,
@@ -514,7 +512,13 @@ export class LLMShield {
     requested: ScannerType[],
     category: 'input' | 'output'
   ): ScannerType[] {
+    if (!Array.isArray(requested)) {
+      throw new ValidationError('Scanners must be an array of supported scanner names');
+    }
     const allScanners = this.listScanners();
+    if ([...requested].some((name) => !allScanners.some((scanner) => scanner.name === name))) {
+      throw new ValidationError('Scanners must contain only supported scanner names');
+    }
 
     if (requested.length === 0) {
       // Return all scanners for this category
@@ -523,12 +527,8 @@ export class LLMShield {
         .map((s) => s.name as ScannerType);
     }
 
-    // Validate requested scanners
-    const valid = requested.filter((name) =>
-      allScanners.some((s) => s.name === name)
-    );
-
-    return valid;
+    // Never silently drop an unknown scanner and return a successful empty scan.
+    return [...requested];
   }
 
   private isScannerEnabled(name: string): boolean {
