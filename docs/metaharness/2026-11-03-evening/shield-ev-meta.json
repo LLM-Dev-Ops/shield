@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "repo": "llm-shield-core",
+  "harnessFit": 79,
+  "compileConfidence": 100,
+  "taskCoverage": 79,
+  "toolSafety": 100,
+  "memoryUsefulness": 36,
+  "estCostPerRunUsd": 0.048,
+  "recommendedMode": "CLI + MCP",
+  "archetype": "typescript-sdk-harness",
+  "template": "vertical:coding",
+  "scaffoldReady": true,
+  "hardConstraints": "6/6",
+  "generatedAt": "2026-11-04T01:06:35.683Z"
+}

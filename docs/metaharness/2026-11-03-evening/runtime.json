@@ -1,0 +1,2180 @@
+{
+  "evBootstrapDone": {
+    "completionVerified": true,
+    "completionVersion": 1,
+    "exitCode": 0,
+    "machineId": "8ee959f7363638",
+    "note": "Full shell access on your desktop. The ADR-043 literal filter catches obvious mistakes but is not a sandbox; the run is audited. Output is capped to the executor head; completionVerified requires executor-owned structured completion. Legacy completion, timeout, transport errors and signal termination have no verified exitCode.",
+    "status": "ok",
+    "stdout": "▶ run: timeout --kill-after=3 20 bash /home/ruv/work/research-lab-runtime-recovery-20261016/scripts/bootstrap-ruos.sh >/tmp/shield-nov03ev-bootstrap.log 2>&1; echo BOOTSTRAP_EXIT=$?; tail -5 /tmp/shield-nov03ev-bootstrap.log; pkg-config --modversion openssl; mkdir /tmp/shield-nov03ev-claim && timeout --kill-after=3 15 git clone --depth 1 --branch metaharness/shield-security-hardening-2026-10-12 https://github.com/LLM-Dev-Ops/shield.git /tmp/shield-nov03ev\n\nBOOTSTRAP_EXIT=0\nProcessing triggers for libc-bin (2.39-0ubuntu8.9) ...\n3.0.13\n-lssl -lcrypto \ncargo 1.99.1 (5f94df478 2026-08-27)\nrustc 1.99.1 (58cf8f9c3 2026-10-13)\n3.0.13\nCloning into '/tmp/shield-nov03ev'...\n\n✓ SUCCESS in 11s · 8 lines\n📝 transcript: /home/ruv/.ruos/activity/2026-11-04/run-timeout-kill-after-3-20-bash-home-ruv-work-r-010431.log\n",
+    "timeoutSecs": 45
+  },
+  "evRuntime": {
+    "completionVerified": true,
+    "completionVersion": 1,
+    "exitCode": 0,
+    "machineId": "8ee959f7363638",
+    "note": "Full shell access on your desktop. The ADR-043 literal filter catches obvious mistakes but is not a sandbox; the run is audited. Output is capped to the executor head; completionVerified requires executor-owned structured completion. Legacy completion, timeout, transport errors and signal termination have no verified exitCode.",
+    "status": "ok",
+    "stdout": "▶ run: cd /tmp/shield-nov03ev && timeout --kill-after=3 35 cargo test --locked -p llm-shield-core -j2 >/tmp/shield-ev-rust.log 2>&1; echo RUST_TEST_EXIT=$?; tail -6 /tmp/shield-ev-rust.log; node /home/ruv/.local/share/llm-dev-ops-tools/node_modules/ruflo/bin/ruflo.js --version; node /home/ruv/.local/share/llm-dev-ops-tools/node_modules/ruflo/bin/ruflo.js swarm init --topology hierarchical --max-agents 1 --auto-scale false --with-permissions strict --format json\n\nRUST_TEST_EXIT=124\n   Compiling rayon v1.12.0\n   Compiling plotters v0.3.7\n   Compiling futures v0.3.33\n   Compiling ciborium v0.2.2\n   Compiling regex v1.13.1\n   Compiling clap v4.6.4\nruflo v3.56.3\n\n  Creating coordination topology...\n  Initializing memory namespace...\n  Setting up communication channels...\n\n+------------+----------------------------+\n| Property   | Value                      |\n+------------+----------------------------+\n| Swarm ID   | swarm-1793754347025-7unmte |\n| Topology   | hierarchical               |\n| Max Agents | 1                          |\n| Auto Scale | Disabled                   |\n| Protocol   | message-bus                |\n| V3 Mode    | Disabled                   |\n+------------+----------------------------+\n\n[OK] Swarm initialized successfully\n  Wrote permission manifest (preset: strict, 3 roles) → .swarm/permissions.jsonl\n  Audit trail seeded → .swarm/permission-audit.jsonl\n{\n  \"success\": true,\n  \"swarmId\": \"swarm-1793754347025-7unmte\",\n  \"topology\": \"hierarchical\",\n  \"strategy\": \"specialized\",\n  \"maxAgents\": 1,\n  \"initializedAt\": \"2026-11-04T01:05:47.025Z\",\n  \"config\": {\n    \"topology\": \"hierarchical\",\n    \"maxAgents\": 1,\n    \"strategy\": \"specialized\",\n    \"communicationProtocol\": \"message-bus\",\n    \"autoScaling\": false,\n    \"consensusMechanism\": \"majority\"\n  },\n  \"persisted\": true\n}\n[INFO] Initializing swarm...\n\n✓ SUCCESS in 35s · 45 lines\n📝 transcript: /home/ruv/.ruos/activity/2026-11-04/run-cd-tmp-shield-nov03ev-timeout-kill-after-3-3-010511.log\n",
+    "timeoutSecs": 45
+  },
+  "evRuflo": {
+    "completionVerified": true,
+    "completionVersion": 1,
+    "exitCode": 0,
+    "machineId": "8ee959f7363638",
+    "note": "Full shell access on your desktop. The ADR-043 literal filter catches obvious mistakes but is not a sandbox; the run is audited. Output is capped to the executor head; completionVerified requires executor-owned structured completion. Legacy completion, timeout, transport errors and signal termination have no verified exitCode.",
+    "status": "ok",
+    "stdout": "▶ run: cd /tmp/shield-nov03ev && timeout --kill-after=3 15 node --input-type=module -e 'const m=await import(\"/home/ruv/.local/share/llm-dev-ops-tools/node_modules/@claude-flow/cli/dist/src/mcp-tools/agent-tools.js\");const ts=Object.values(m).filter(Array.isArray).flat();const t=n=>ts.find(x=>x.name===n);const id=\"shield-nov03ev-verifier\";try{console.log(JSON.stringify(await t(\"agent_spawn\").handler({agentType:\"tester\",agentId:id,model:\"inherit\",task:\"Verify public constructor-validation summary\"})));console.log(JSON.stringify(await t(\"agent_execute\").handler({agentId:id,prompt:\"Summarize only: five malformed scanner configurations silently default on baseline. Do not invent candidate results or use tools.\",maxTokens:64,temperature:0})));}finally{console.log(JSON.stringify(await t(\"agent_terminate\").handler({agentId:id})));}'\n\n{\"success\":true,\"agentId\":\"shield-nov03ev-verifier\",\"agentType\":\"tester\",\"model\":\"inherit\",\"modelRoutedBy\":\"explicit\",\"status\":\"registered\",\"createdAt\":\"2026-11-04T01:06:35.351Z\",\"note\":\"Agent registered for coordination. Three execution paths: (1) call agent_execute(agentId, prompt) — direct LLM call via Anthropic Messages API (requires ANTHROPIC_API_KEY); (2) Claude Code Task tool — spawns a real subagent; (3) claude -p — headless background instance.\"}\n{\"success\":false,\"agentId\":\"shield-nov03ev-verifier\",\"model\":\"claude-sonnet-5\",\"error\":\"No LLM provider configured. Set ANTHROPIC_API_KEY or ANTHROPIC_AUTH_TOKEN (Tier-3), OPENROUTER_API_KEY (#2042), or OLLAMA_API_KEY (Tier-2 — #1725).\",\"durationMs\":10,\"remediation\":\"Set one of ANTHROPIC_API_KEY, OPENROUTER_API_KEY (+ optional OPENROUTER_BASE_URL), or OLLAMA_API_KEY. Or set RUFLO_PROVIDER=openrouter|ollama to force a specific provider.\"}\n{\"success\":true,\"agentId\":\"shield-nov03ev-verifier\",\"terminated\":true,\"terminatedAt\":\"2026-11-04T01:06:35.379Z\"}\n\n✓ SUCCESS in 0s · 3 lines\n📝 transcript: /home/ruv/.ruos/activity/2026-11-04/run-cd-tmp-shield-nov03ev-timeout-kill-after-3-1-010635.log\n",
+    "timeoutSecs": 20
+  },
+  "evRustExact": {
+    "completionVerified": true,
+    "completionVersion": 1,
+    "exitCode": 0,
+    "machineId": "8ee959f7363638",
+    "note": "Full shell access on your desktop. The ADR-043 literal filter catches obvious mistakes but is not a sandbox; the run is audited. Output is capped to the executor head; completionVerified requires executor-owned structured completion. Legacy completion, timeout, transport errors and signal termination have no verified exitCode.",
+    "status": "ok",
+    "stdout": "▶ run: cd /tmp/shield-nov03ev && timeout --kill-after=3 10 git fetch --depth 2 origin metaharness/shield-security-hardening-2026-10-12 && git merge --ff-only FETCH_HEAD && git rev-parse HEAD && timeout --kill-after=3 35 cargo test --locked -p llm-shield-core -j2 >/tmp/shield-ev-exact-rust.log 2>&1; echo EXACT_RUST_EXIT=$?; tail -6 /tmp/shield-ev-exact-rust.log; cd /tmp/shield-nov03ev && cargo fmt --all -- --check >/tmp/shield-ev-fmt.log 2>&1; echo FMT_EXIT=$?; tail -4 /tmp/shield-ev-fmt.log\n\nUpdating f0c74ae..34977db\nFast-forward\n packages/core/security/constructor-contract.json        |  9 +++++++++\n packages/core/security/evaluate-cache.mjs               |  2 +-\n packages/core/security/probe-constructor.mjs            | 17 +++++++++++++++++\n packages/core/src/shield.ts                             |  2 +-\n packages/core/tests/unit/constructor-validation.test.ts | 15 +++++++++++++++\n 5 files changed, 43 insertions(+), 2 deletions(-)\n create mode 100644 packages/core/security/constructor-contract.json\n create mode 100644 packages/core/security/probe-constructor.mjs\n create mode 100644 packages/core/tests/unit/constructor-validation.test.ts\n34977db60672ef149c56a7bae2a844f5f0d0ac72\nEXACT_RUST_EXIT=0\ntest crates/llm-shield-core/src/adapters/config.rs - adapters::config (line 22) ... ignored\ntest crates/llm-shield-core/src/adapters/policy.rs - adapters::policy (line 22) ... ignored\ntest crates/llm-shield-core/src/scanner.rs - scanner::Scanner (line 28) ... ignored\n\ntest result: ok. 0 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\nFMT_EXIT=1\n\u001b[m\u000f\u001b[32m+    .to_string()\n\u001b[m\u000f }\n \n // ============================================================================\nFrom https://github.com/LLM-Dev-Ops/shield\n * branch            metaharness/shield-security-hardening-2026-10-12 -> FETCH_HEAD\n   f0c74ae..34977db  metaharness/shield-security-hardening-2026-10-12 -> origin/metaharness/shield-security-hardening-2026-10-12\n\n✓ SUCCESS in 8s · 27 lines\n📝 transcript: /home/ruv/.ruos/activity/2026-11-04/run-cd-tmp-shield-nov03ev-timeout-kill-after-3-1-010743.log\n",
+    "timeoutSecs": 55
+  },
+  "evRustGates": {
+    "completionVerified": true,
+    "completionVersion": 1,
+    "exitCode": 0,
+    "machineId": "8ee959f7363638",
+    "note": "Full shell access on your desktop. The ADR-043 literal filter catches obvious mistakes but is not a sandbox; the run is audited. Output is capped to the executor head; completionVerified requires executor-owned structured completion. Legacy completion, timeout, transport errors and signal termination have no verified exitCode.",
+    "status": "ok",
+    "stdout": "▶ run: cd /tmp/shield-nov03ev && grep 'test result:' /tmp/shield-ev-exact-rust.log; timeout --kill-after=3 15 cargo clippy --locked -p llm-shield-core --all-targets -- -D warnings >/tmp/shield-ev-clippy.log 2>&1; echo CLIPPY_EXIT=$?; tail -6 /tmp/shield-ev-clippy.log; timeout --kill-after=3 15 cargo build --locked -p llm-shield-core >/tmp/shield-ev-rust-build.log 2>&1; echo BUILD_EXIT=$?; tail -3 /tmp/shield-ev-rust-build.log; timeout --kill-after=3 8 cargo audit --no-fetch --json >/tmp/shield-ev-rust-audit.json 2>/tmp/shield-ev-rust-audit.err; echo AUDIT_EXIT=$?; python3 -c 'import json; p=json.load(open(\"/tmp/shield-ev-rust-audit.json\")); print(p[\"vulnerabilities\"][\"count\"])'; git -C /home/ruv/.cargo/advisory-db rev-parse HEAD\n\ntest result::tests::test_combine_results ... ok\ntest result::tests::test_scan_result_builder ... ok\ntest result::tests::test_scan_result_creation ... ok\ntest result::tests::test_severity_ordering ... ok\ntest result::tests::test_scan_result_fail ... ok\ntest result: ok. 33 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s\ntest result: ok. 0 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 0.00s\nCLIPPY_EXIT=101\n    |                                                                ^^^^\n    |\n    = help: consider using the constant directly\n    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#approx_constant\n\nerror: could not compile `llm-shield-core` (lib test) due to 19 previous errors\nBUILD_EXIT=0\n\nwarning: `llm-shield-core` (lib) generated 2 warnings (run `cargo fix --lib -p llm-shield-core` to apply 2 suggestions)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.25s\nAUDIT_EXIT=1\n33\n6c5fedf8ff03c485ed674d8f941e0180f3f72d70\n\n✓ SUCCESS in 15s · 21 lines\n📝 transcript: /home/ruv/.ruos/activity/2026-11-04/run-cd-tmp-shield-nov03ev-grep-test-result-tmp-s-010837.log\n",
+    "timeoutSecs": 50
+  },
+  "evWorkspaceKernel": {
+    "completionVerified": true,
+    "completionVersion": 1,
+    "exitCode": 0,
+    "machineId": "8ee959f7363638",
+    "note": "Full shell access on your desktop. The ADR-043 literal filter catches obvious mistakes but is not a sandbox; the run is audited. Output is capped to the executor head; completionVerified requires executor-owned structured completion. Legacy completion, timeout, transport errors and signal termination have no verified exitCode.",
+    "status": "ok",
+    "stdout": "▶ run: cd /tmp/shield-nov03ev && timeout --kill-after=3 30 cargo test --workspace --locked >/tmp/shield-ev-workspace.log 2>&1; echo WORKSPACE_EXIT=$?; tail -6 /tmp/shield-ev-workspace.log; cd /tmp/shield-nov03ev && python3 /home/ruv/work/research-lab-runtime-recovery-20261016/scripts/offline-exec.py python3 -c 'import socket,errno,subprocess,sys; p=\"import socket,errno\\nfor f in (socket.AF_INET,socket.AF_INET6):\\n try: socket.socket(f); raise AssertionError(\\\"socket allowed\\\")\\n except OSError as e: assert e.errno==errno.EPERM\\nprint(\\\"IPv4 and IPv6 denied\\\")\";exec(p);subprocess.run([sys.executable,\"-c\",p],check=True);print(\"Child inherits kernel denial\")'\n\nWORKSPACE_EXIT=124\n   Compiling reqwest v0.12.28\n   Compiling hex v0.4.3\n   Compiling ureq-proto v0.6.0\n   Compiling aws-smithy-types v1.6.1\n   Compiling clap_builder v4.6.2\n   Compiling clap_derive v4.6.4\nIPv4 and IPv6 denied\nIPv4 and IPv6 denied\nChild inherits kernel denial\n\n✓ SUCCESS in 30s · 10 lines\n📝 transcript: /home/ruv/.ruos/activity/2026-11-04/run-cd-tmp-shield-nov03ev-timeout-kill-after-3-3-010939.log\n",
+    "timeoutSecs": 40
+  },
+  "evLearning": {
+    "completionVerified": true,
+    "completionVersion": 1,
+    "exitCode": 0,
+    "machineId": "8ee959f7363638",
+    "note": "Full shell access on your desktop. The ADR-043 literal filter catches obvious mistakes but is not a sandbox; the run is audited. Output is capped to the executor head; completionVerified requires executor-owned structured completion. Legacy completion, timeout, transport errors and signal termination have no verified exitCode.",
+    "status": "ok",
+    "stdout": "▶ run: cd /tmp/shield-nov03ev && RUFLO_MODEL_DIR=/home/ruv/.cache/llm-dev-ops-models timeout --kill-after=3 40 python3 /home/ruv/work/research-lab-runtime-recovery-20261016/scripts/offline-exec.py node --import /home/ruv/work/research-lab-runtime-recovery-20261016/scripts/ruflo-local-model.mjs /home/ruv/.local/share/llm-dev-ops-tools/node_modules/ruflo/bin/ruflo.js hooks post-task --task-id shield-constructor-20261103ev --success false --quality 0.8 --agent codex --task 'Reject five malformed falsy scanner configurations; eight anchors and original 68 tests retained; targeted Rust tests pass 33; full security coverage CI and real Ruflo execution remain blocked; not merged' --store-results --format json >/tmp/shield-ev-learning.log 2>&1; echo LEARNING_EXIT=$?; tail -35 /tmp/shield-ev-learning.log; node -p 'require(\"/home/ruv/.local/share/llm-dev-ops-tools/node_modules/@huggingface/transformers/package.json\").version'\n\nLEARNING_EXIT=0\nOffline local MiniLM model verified: 384 dimensions; remote loading disabled\n[INFO] Recording outcome for task: shield-constructor-20261103ev\nTransformers.js loaded: Xenova/all-MiniLM-L6-v2\n{\n  \"taskId\": \"shield-constructor-20261103ev\",\n  \"success\": false,\n  \"duration\": 986,\n  \"learningUpdates\": {\n    \"patternsUpdated\": 2,\n    \"newPatterns\": null,\n    \"trajectoryId\": null,\n    \"controller\": \"intelligence+bridge-store\",\n    \"outcomePersisted\": true,\n    \"available\": true\n  },\n  \"trajectory\": {\n    \"recorded\": true\n  },\n  \"quality\": 0.8,\n  \"pheromone\": {\n    \"active\": false,\n    \"reason\": \"no running pheromone-adaptive swarm\"\n  },\n  \"feedback\": {\n    \"recorded\": true,\n    \"controller\": \"intelligence+bridge-store\",\n    \"updates\": 2\n  },\n  \"timestamp\": \"2026-11-04T01:09:14.794Z\"\n}\n4.3.1\n\n✓ SUCCESS in 2s · 32 lines\n📝 transcript: /home/ruv/.ruos/activity/2026-11-04/run-cd-tmp-shield-nov03ev-ruflo-model-dir-home-r-010911.log\n",
+    "timeoutSecs": 50
+  },
+  "evCI": {
+    "total_count": 3,
+    "workflow_runs": [
+      {
+        "id": 41751835733,
+        "name": "Test",
+        "node_id": "WFR_kwLOQMTd9s8AAAAJuJp0VQ",
+        "head_branch": "metaharness/shield-security-hardening-2026-10-12",
+        "head_sha": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+        "path": ".github/workflows/test.yml",
+        "display_title": "fix(core): isolate scan cache boundaries and retain deterministic validation",
+        "run_number": 48,
+        "event": "pull_request",
+        "status": "completed",
+        "conclusion": "success",
+        "workflow_id": 202595808,
+        "check_suite_id": 113140051903,
+        "check_suite_node_id": "CS_kwDOQMTd9s8AAAAaV6wvvw",
+        "url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835733",
+        "html_url": "https://github.com/LLM-Dev-Ops/shield/actions/runs/41751835733",
+        "pull_requests": [
+          {
+            "url": "https://api.github.com/repos/LLM-Dev-Ops/shield/pulls/3",
+            "id": 4829441819,
+            "number": 3,
+            "head": {
+              "ref": "metaharness/shield-security-hardening-2026-10-12",
+              "sha": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+              "repo": {
+                "id": 1086643702,
+                "url": "https://api.github.com/repos/LLM-Dev-Ops/shield",
+                "name": "shield"
+              }
+            },
+            "base": {
+              "ref": "main",
+              "sha": "1c46282495b94bb1fcae2d9e63cf34f495226699",
+              "repo": {
+                "id": 1086643702,
+                "url": "https://api.github.com/repos/LLM-Dev-Ops/shield",
+                "name": "shield"
+              }
+            }
+          }
+        ],
+        "created_at": "2026-11-04T01:07:28Z",
+        "updated_at": "2026-11-04T01:09:11Z",
+        "actor": {
+          "login": "nicholas-ruest",
+          "id": 127058086,
+          "node_id": "U_kgDOB5LApg",
+          "avatar_url": "https://avatars.githubusercontent.com/u/127058086?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/nicholas-ruest",
+          "html_url": "https://github.com/nicholas-ruest",
+          "followers_url": "https://api.github.com/users/nicholas-ruest/followers",
+          "following_url": "https://api.github.com/users/nicholas-ruest/following{/other_user}",
+          "gists_url": "https://api.github.com/users/nicholas-ruest/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/nicholas-ruest/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/nicholas-ruest/subscriptions",
+          "organizations_url": "https://api.github.com/users/nicholas-ruest/orgs",
+          "repos_url": "https://api.github.com/users/nicholas-ruest/repos",
+          "events_url": "https://api.github.com/users/nicholas-ruest/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/nicholas-ruest/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "run_attempt": 1,
+        "referenced_workflows": [],
+        "run_started_at": "2026-11-04T01:07:28Z",
+        "triggering_actor": {
+          "login": "nicholas-ruest",
+          "id": 127058086,
+          "node_id": "U_kgDOB5LApg",
+          "avatar_url": "https://avatars.githubusercontent.com/u/127058086?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/nicholas-ruest",
+          "html_url": "https://github.com/nicholas-ruest",
+          "followers_url": "https://api.github.com/users/nicholas-ruest/followers",
+          "following_url": "https://api.github.com/users/nicholas-ruest/following{/other_user}",
+          "gists_url": "https://api.github.com/users/nicholas-ruest/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/nicholas-ruest/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/nicholas-ruest/subscriptions",
+          "organizations_url": "https://api.github.com/users/nicholas-ruest/orgs",
+          "repos_url": "https://api.github.com/users/nicholas-ruest/repos",
+          "events_url": "https://api.github.com/users/nicholas-ruest/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/nicholas-ruest/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "jobs_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835733/jobs",
+        "logs_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835733/logs",
+        "check_suite_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/check-suites/113140051903",
+        "artifacts_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835733/artifacts",
+        "cancel_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835733/cancel",
+        "rerun_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835733/rerun",
+        "previous_attempt_url": null,
+        "workflow_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/workflows/202595808",
+        "head_commit": {
+          "id": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+          "tree_id": "4ff7446aaccc7a4c926119dcebedc8c2f996b551",
+          "message": "fix(core): reject malformed falsy scanner configuration at construction",
+          "timestamp": "2026-11-04T01:07:16Z",
+          "author": {
+            "name": "Nick Ruest",
+            "email": "127058086+nicholas-ruest@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "Nick Ruest",
+            "email": "127058086+nicholas-ruest@users.noreply.github.com"
+          }
+        },
+        "repository": {
+          "id": 1086643702,
+          "node_id": "R_kgDOQMTd9g",
+          "name": "shield",
+          "full_name": "LLM-Dev-Ops/shield",
+          "private": false,
+          "owner": {
+            "login": "LLM-Dev-Ops",
+            "id": 244846782,
+            "node_id": "O_kgDODpgQvg",
+            "avatar_url": "https://avatars.githubusercontent.com/u/244846782?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/LLM-Dev-Ops",
+            "html_url": "https://github.com/LLM-Dev-Ops",
+            "followers_url": "https://api.github.com/users/LLM-Dev-Ops/followers",
+            "following_url": "https://api.github.com/users/LLM-Dev-Ops/following{/other_user}",
+            "gists_url": "https://api.github.com/users/LLM-Dev-Ops/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/LLM-Dev-Ops/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/LLM-Dev-Ops/subscriptions",
+            "organizations_url": "https://api.github.com/users/LLM-Dev-Ops/orgs",
+            "repos_url": "https://api.github.com/users/LLM-Dev-Ops/repos",
+            "events_url": "https://api.github.com/users/LLM-Dev-Ops/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/LLM-Dev-Ops/received_events",
+            "type": "Organization",
+            "user_view_type": "public",
+            "site_admin": false
+          },
+          "html_url": "https://github.com/LLM-Dev-Ops/shield",
+          "description": null,
+          "fork": false,
+          "url": "https://api.github.com/repos/LLM-Dev-Ops/shield",
+          "forks_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/forks",
+          "keys_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/keys{/key_id}",
+          "collaborators_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/collaborators{/collaborator}",
+          "teams_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/teams",
+          "hooks_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/hooks",
+          "issue_events_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/issues/events{/number}",
+          "events_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/events",
+          "assignees_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/assignees{/user}",
+          "branches_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/branches{/branch}",
+          "tags_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/tags",
+          "blobs_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/blobs{/sha}",
+          "git_tags_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/tags{/sha}",
+          "git_refs_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/refs{/sha}",
+          "trees_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/trees{/sha}",
+          "statuses_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/statuses/{sha}",
+          "languages_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/languages",
+          "stargazers_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/stargazers",
+          "contributors_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/contributors",
+          "subscribers_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/subscribers",
+          "subscription_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/subscription",
+          "commits_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/commits{/sha}",
+          "git_commits_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/commits{/sha}",
+          "comments_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/comments{/number}",
+          "issue_comment_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/issues/comments{/number}",
+          "contents_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/contents/{+path}",
+          "compare_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/compare/{base}...{head}",
+          "merges_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/merges",
+          "archive_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/{archive_format}{/ref}",
+          "downloads_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/downloads",
+          "issues_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/issues{/number}",
+          "pulls_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/pulls{/number}",
+          "milestones_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/milestones{/number}",
+          "notifications_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/notifications{?since,all,participating}",
+          "labels_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/labels{/name}",
+          "releases_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/releases{/id}",
+          "deployments_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/deployments"
+        },
+        "head_repository": {
+          "id": 1086643702,
+          "node_id": "R_kgDOQMTd9g",
+          "name": "shield",
+          "full_name": "LLM-Dev-Ops/shield",
+          "private": false,
+          "owner": {
+            "login": "LLM-Dev-Ops",
+            "id": 244846782,
+            "node_id": "O_kgDODpgQvg",
+            "avatar_url": "https://avatars.githubusercontent.com/u/244846782?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/LLM-Dev-Ops",
+            "html_url": "https://github.com/LLM-Dev-Ops",
+            "followers_url": "https://api.github.com/users/LLM-Dev-Ops/followers",
+            "following_url": "https://api.github.com/users/LLM-Dev-Ops/following{/other_user}",
+            "gists_url": "https://api.github.com/users/LLM-Dev-Ops/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/LLM-Dev-Ops/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/LLM-Dev-Ops/subscriptions",
+            "organizations_url": "https://api.github.com/users/LLM-Dev-Ops/orgs",
+            "repos_url": "https://api.github.com/users/LLM-Dev-Ops/repos",
+            "events_url": "https://api.github.com/users/LLM-Dev-Ops/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/LLM-Dev-Ops/received_events",
+            "type": "Organization",
+            "user_view_type": "public",
+            "site_admin": false
+          },
+          "html_url": "https://github.com/LLM-Dev-Ops/shield",
+          "description": null,
+          "fork": false,
+          "url": "https://api.github.com/repos/LLM-Dev-Ops/shield",
+          "forks_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/forks",
+          "keys_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/keys{/key_id}",
+          "collaborators_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/collaborators{/collaborator}",
+          "teams_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/teams",
+          "hooks_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/hooks",
+          "issue_events_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/issues/events{/number}",
+          "events_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/events",
+          "assignees_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/assignees{/user}",
+          "branches_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/branches{/branch}",
+          "tags_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/tags",
+          "blobs_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/blobs{/sha}",
+          "git_tags_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/tags{/sha}",
+          "git_refs_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/refs{/sha}",
+          "trees_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/trees{/sha}",
+          "statuses_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/statuses/{sha}",
+          "languages_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/languages",
+          "stargazers_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/stargazers",
+          "contributors_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/contributors",
+          "subscribers_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/subscribers",
+          "subscription_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/subscription",
+          "commits_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/commits{/sha}",
+          "git_commits_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/commits{/sha}",
+          "comments_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/comments{/number}",
+          "issue_comment_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/issues/comments{/number}",
+          "contents_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/contents/{+path}",
+          "compare_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/compare/{base}...{head}",
+          "merges_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/merges",
+          "archive_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/{archive_format}{/ref}",
+          "downloads_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/downloads",
+          "issues_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/issues{/number}",
+          "pulls_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/pulls{/number}",
+          "milestones_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/milestones{/number}",
+          "notifications_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/notifications{?since,all,participating}",
+          "labels_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/labels{/name}",
+          "releases_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/releases{/id}",
+          "deployments_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/deployments"
+        }
+      },
+      {
+        "id": 41751835727,
+        "name": "CI/CD",
+        "node_id": "WFR_kwLOQMTd9s8AAAAJuJp0Tw",
+        "head_branch": "metaharness/shield-security-hardening-2026-10-12",
+        "head_sha": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+        "path": ".github/workflows/ci.yml",
+        "display_title": "fix(core): isolate scan cache boundaries and retain deterministic validation",
+        "run_number": 59,
+        "event": "pull_request",
+        "status": "in_progress",
+        "conclusion": null,
+        "workflow_id": 202518525,
+        "check_suite_id": 113140051886,
+        "check_suite_node_id": "CS_kwDOQMTd9s8AAAAaV6wvrg",
+        "url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835727",
+        "html_url": "https://github.com/LLM-Dev-Ops/shield/actions/runs/41751835727",
+        "pull_requests": [
+          {
+            "url": "https://api.github.com/repos/LLM-Dev-Ops/shield/pulls/3",
+            "id": 4829441819,
+            "number": 3,
+            "head": {
+              "ref": "metaharness/shield-security-hardening-2026-10-12",
+              "sha": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+              "repo": {
+                "id": 1086643702,
+                "url": "https://api.github.com/repos/LLM-Dev-Ops/shield",
+                "name": "shield"
+              }
+            },
+            "base": {
+              "ref": "main",
+              "sha": "1c46282495b94bb1fcae2d9e63cf34f495226699",
+              "repo": {
+                "id": 1086643702,
+                "url": "https://api.github.com/repos/LLM-Dev-Ops/shield",
+                "name": "shield"
+              }
+            }
+          }
+        ],
+        "created_at": "2026-11-04T01:07:28Z",
+        "updated_at": "2026-11-04T01:07:37Z",
+        "actor": {
+          "login": "nicholas-ruest",
+          "id": 127058086,
+          "node_id": "U_kgDOB5LApg",
+          "avatar_url": "https://avatars.githubusercontent.com/u/127058086?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/nicholas-ruest",
+          "html_url": "https://github.com/nicholas-ruest",
+          "followers_url": "https://api.github.com/users/nicholas-ruest/followers",
+          "following_url": "https://api.github.com/users/nicholas-ruest/following{/other_user}",
+          "gists_url": "https://api.github.com/users/nicholas-ruest/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/nicholas-ruest/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/nicholas-ruest/subscriptions",
+          "organizations_url": "https://api.github.com/users/nicholas-ruest/orgs",
+          "repos_url": "https://api.github.com/users/nicholas-ruest/repos",
+          "events_url": "https://api.github.com/users/nicholas-ruest/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/nicholas-ruest/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "run_attempt": 1,
+        "referenced_workflows": [],
+        "run_started_at": "2026-11-04T01:07:28Z",
+        "triggering_actor": {
+          "login": "nicholas-ruest",
+          "id": 127058086,
+          "node_id": "U_kgDOB5LApg",
+          "avatar_url": "https://avatars.githubusercontent.com/u/127058086?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/nicholas-ruest",
+          "html_url": "https://github.com/nicholas-ruest",
+          "followers_url": "https://api.github.com/users/nicholas-ruest/followers",
+          "following_url": "https://api.github.com/users/nicholas-ruest/following{/other_user}",
+          "gists_url": "https://api.github.com/users/nicholas-ruest/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/nicholas-ruest/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/nicholas-ruest/subscriptions",
+          "organizations_url": "https://api.github.com/users/nicholas-ruest/orgs",
+          "repos_url": "https://api.github.com/users/nicholas-ruest/repos",
+          "events_url": "https://api.github.com/users/nicholas-ruest/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/nicholas-ruest/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "jobs_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835727/jobs",
+        "logs_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835727/logs",
+        "check_suite_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/check-suites/113140051886",
+        "artifacts_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835727/artifacts",
+        "cancel_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835727/cancel",
+        "rerun_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835727/rerun",
+        "previous_attempt_url": null,
+        "workflow_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/workflows/202518525",
+        "head_commit": {
+          "id": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+          "tree_id": "4ff7446aaccc7a4c926119dcebedc8c2f996b551",
+          "message": "fix(core): reject malformed falsy scanner configuration at construction",
+          "timestamp": "2026-11-04T01:07:16Z",
+          "author": {
+            "name": "Nick Ruest",
+            "email": "127058086+nicholas-ruest@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "Nick Ruest",
+            "email": "127058086+nicholas-ruest@users.noreply.github.com"
+          }
+        },
+        "repository": {
+          "id": 1086643702,
+          "node_id": "R_kgDOQMTd9g",
+          "name": "shield",
+          "full_name": "LLM-Dev-Ops/shield",
+          "private": false,
+          "owner": {
+            "login": "LLM-Dev-Ops",
+            "id": 244846782,
+            "node_id": "O_kgDODpgQvg",
+            "avatar_url": "https://avatars.githubusercontent.com/u/244846782?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/LLM-Dev-Ops",
+            "html_url": "https://github.com/LLM-Dev-Ops",
+            "followers_url": "https://api.github.com/users/LLM-Dev-Ops/followers",
+            "following_url": "https://api.github.com/users/LLM-Dev-Ops/following{/other_user}",
+            "gists_url": "https://api.github.com/users/LLM-Dev-Ops/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/LLM-Dev-Ops/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/LLM-Dev-Ops/subscriptions",
+            "organizations_url": "https://api.github.com/users/LLM-Dev-Ops/orgs",
+            "repos_url": "https://api.github.com/users/LLM-Dev-Ops/repos",
+            "events_url": "https://api.github.com/users/LLM-Dev-Ops/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/LLM-Dev-Ops/received_events",
+            "type": "Organization",
+            "user_view_type": "public",
+            "site_admin": false
+          },
+          "html_url": "https://github.com/LLM-Dev-Ops/shield",
+          "description": null,
+          "fork": false,
+          "url": "https://api.github.com/repos/LLM-Dev-Ops/shield",
+          "forks_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/forks",
+          "keys_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/keys{/key_id}",
+          "collaborators_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/collaborators{/collaborator}",
+          "teams_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/teams",
+          "hooks_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/hooks",
+          "issue_events_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/issues/events{/number}",
+          "events_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/events",
+          "assignees_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/assignees{/user}",
+          "branches_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/branches{/branch}",
+          "tags_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/tags",
+          "blobs_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/blobs{/sha}",
+          "git_tags_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/tags{/sha}",
+          "git_refs_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/refs{/sha}",
+          "trees_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/trees{/sha}",
+          "statuses_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/statuses/{sha}",
+          "languages_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/languages",
+          "stargazers_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/stargazers",
+          "contributors_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/contributors",
+          "subscribers_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/subscribers",
+          "subscription_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/subscription",
+          "commits_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/commits{/sha}",
+          "git_commits_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/commits{/sha}",
+          "comments_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/comments{/number}",
+          "issue_comment_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/issues/comments{/number}",
+          "contents_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/contents/{+path}",
+          "compare_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/compare/{base}...{head}",
+          "merges_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/merges",
+          "archive_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/{archive_format}{/ref}",
+          "downloads_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/downloads",
+          "issues_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/issues{/number}",
+          "pulls_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/pulls{/number}",
+          "milestones_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/milestones{/number}",
+          "notifications_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/notifications{?since,all,participating}",
+          "labels_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/labels{/name}",
+          "releases_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/releases{/id}",
+          "deployments_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/deployments"
+        },
+        "head_repository": {
+          "id": 1086643702,
+          "node_id": "R_kgDOQMTd9g",
+          "name": "shield",
+          "full_name": "LLM-Dev-Ops/shield",
+          "private": false,
+          "owner": {
+            "login": "LLM-Dev-Ops",
+            "id": 244846782,
+            "node_id": "O_kgDODpgQvg",
+            "avatar_url": "https://avatars.githubusercontent.com/u/244846782?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/LLM-Dev-Ops",
+            "html_url": "https://github.com/LLM-Dev-Ops",
+            "followers_url": "https://api.github.com/users/LLM-Dev-Ops/followers",
+            "following_url": "https://api.github.com/users/LLM-Dev-Ops/following{/other_user}",
+            "gists_url": "https://api.github.com/users/LLM-Dev-Ops/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/LLM-Dev-Ops/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/LLM-Dev-Ops/subscriptions",
+            "organizations_url": "https://api.github.com/users/LLM-Dev-Ops/orgs",
+            "repos_url": "https://api.github.com/users/LLM-Dev-Ops/repos",
+            "events_url": "https://api.github.com/users/LLM-Dev-Ops/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/LLM-Dev-Ops/received_events",
+            "type": "Organization",
+            "user_view_type": "public",
+            "site_admin": false
+          },
+          "html_url": "https://github.com/LLM-Dev-Ops/shield",
+          "description": null,
+          "fork": false,
+          "url": "https://api.github.com/repos/LLM-Dev-Ops/shield",
+          "forks_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/forks",
+          "keys_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/keys{/key_id}",
+          "collaborators_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/collaborators{/collaborator}",
+          "teams_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/teams",
+          "hooks_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/hooks",
+          "issue_events_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/issues/events{/number}",
+          "events_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/events",
+          "assignees_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/assignees{/user}",
+          "branches_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/branches{/branch}",
+          "tags_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/tags",
+          "blobs_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/blobs{/sha}",
+          "git_tags_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/tags{/sha}",
+          "git_refs_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/refs{/sha}",
+          "trees_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/trees{/sha}",
+          "statuses_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/statuses/{sha}",
+          "languages_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/languages",
+          "stargazers_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/stargazers",
+          "contributors_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/contributors",
+          "subscribers_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/subscribers",
+          "subscription_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/subscription",
+          "commits_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/commits{/sha}",
+          "git_commits_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/commits{/sha}",
+          "comments_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/comments{/number}",
+          "issue_comment_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/issues/comments{/number}",
+          "contents_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/contents/{+path}",
+          "compare_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/compare/{base}...{head}",
+          "merges_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/merges",
+          "archive_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/{archive_format}{/ref}",
+          "downloads_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/downloads",
+          "issues_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/issues{/number}",
+          "pulls_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/pulls{/number}",
+          "milestones_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/milestones{/number}",
+          "notifications_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/notifications{?since,all,participating}",
+          "labels_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/labels{/name}",
+          "releases_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/releases{/id}",
+          "deployments_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/deployments"
+        }
+      },
+      {
+        "id": 41751835758,
+        "name": "Agents CI",
+        "node_id": "WFR_kwLOQMTd9s8AAAAJuJp0bg",
+        "head_branch": "metaharness/shield-security-hardening-2026-10-12",
+        "head_sha": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+        "path": ".github/workflows/agents-ci.yml",
+        "display_title": "fix(core): isolate scan cache boundaries and retain deterministic validation",
+        "run_number": 11,
+        "event": "pull_request",
+        "status": "completed",
+        "conclusion": "failure",
+        "workflow_id": 382130949,
+        "check_suite_id": 113140051900,
+        "check_suite_node_id": "CS_kwDOQMTd9s8AAAAaV6wvvA",
+        "url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835758",
+        "html_url": "https://github.com/LLM-Dev-Ops/shield/actions/runs/41751835758",
+        "pull_requests": [
+          {
+            "url": "https://api.github.com/repos/LLM-Dev-Ops/shield/pulls/3",
+            "id": 4829441819,
+            "number": 3,
+            "head": {
+              "ref": "metaharness/shield-security-hardening-2026-10-12",
+              "sha": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+              "repo": {
+                "id": 1086643702,
+                "url": "https://api.github.com/repos/LLM-Dev-Ops/shield",
+                "name": "shield"
+              }
+            },
+            "base": {
+              "ref": "main",
+              "sha": "1c46282495b94bb1fcae2d9e63cf34f495226699",
+              "repo": {
+                "id": 1086643702,
+                "url": "https://api.github.com/repos/LLM-Dev-Ops/shield",
+                "name": "shield"
+              }
+            }
+          }
+        ],
+        "created_at": "2026-11-04T01:07:28Z",
+        "updated_at": "2026-11-04T01:07:56Z",
+        "actor": {
+          "login": "nicholas-ruest",
+          "id": 127058086,
+          "node_id": "U_kgDOB5LApg",
+          "avatar_url": "https://avatars.githubusercontent.com/u/127058086?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/nicholas-ruest",
+          "html_url": "https://github.com/nicholas-ruest",
+          "followers_url": "https://api.github.com/users/nicholas-ruest/followers",
+          "following_url": "https://api.github.com/users/nicholas-ruest/following{/other_user}",
+          "gists_url": "https://api.github.com/users/nicholas-ruest/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/nicholas-ruest/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/nicholas-ruest/subscriptions",
+          "organizations_url": "https://api.github.com/users/nicholas-ruest/orgs",
+          "repos_url": "https://api.github.com/users/nicholas-ruest/repos",
+          "events_url": "https://api.github.com/users/nicholas-ruest/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/nicholas-ruest/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "run_attempt": 1,
+        "referenced_workflows": [],
+        "run_started_at": "2026-11-04T01:07:28Z",
+        "triggering_actor": {
+          "login": "nicholas-ruest",
+          "id": 127058086,
+          "node_id": "U_kgDOB5LApg",
+          "avatar_url": "https://avatars.githubusercontent.com/u/127058086?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/nicholas-ruest",
+          "html_url": "https://github.com/nicholas-ruest",
+          "followers_url": "https://api.github.com/users/nicholas-ruest/followers",
+          "following_url": "https://api.github.com/users/nicholas-ruest/following{/other_user}",
+          "gists_url": "https://api.github.com/users/nicholas-ruest/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/nicholas-ruest/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/nicholas-ruest/subscriptions",
+          "organizations_url": "https://api.github.com/users/nicholas-ruest/orgs",
+          "repos_url": "https://api.github.com/users/nicholas-ruest/repos",
+          "events_url": "https://api.github.com/users/nicholas-ruest/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/nicholas-ruest/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "jobs_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835758/jobs",
+        "logs_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835758/logs",
+        "check_suite_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/check-suites/113140051900",
+        "artifacts_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835758/artifacts",
+        "cancel_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835758/cancel",
+        "rerun_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835758/rerun",
+        "previous_attempt_url": null,
+        "workflow_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/workflows/382130949",
+        "head_commit": {
+          "id": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+          "tree_id": "4ff7446aaccc7a4c926119dcebedc8c2f996b551",
+          "message": "fix(core): reject malformed falsy scanner configuration at construction",
+          "timestamp": "2026-11-04T01:07:16Z",
+          "author": {
+            "name": "Nick Ruest",
+            "email": "127058086+nicholas-ruest@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "Nick Ruest",
+            "email": "127058086+nicholas-ruest@users.noreply.github.com"
+          }
+        },
+        "repository": {
+          "id": 1086643702,
+          "node_id": "R_kgDOQMTd9g",
+          "name": "shield",
+          "full_name": "LLM-Dev-Ops/shield",
+          "private": false,
+          "owner": {
+            "login": "LLM-Dev-Ops",
+            "id": 244846782,
+            "node_id": "O_kgDODpgQvg",
+            "avatar_url": "https://avatars.githubusercontent.com/u/244846782?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/LLM-Dev-Ops",
+            "html_url": "https://github.com/LLM-Dev-Ops",
+            "followers_url": "https://api.github.com/users/LLM-Dev-Ops/followers",
+            "following_url": "https://api.github.com/users/LLM-Dev-Ops/following{/other_user}",
+            "gists_url": "https://api.github.com/users/LLM-Dev-Ops/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/LLM-Dev-Ops/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/LLM-Dev-Ops/subscriptions",
+            "organizations_url": "https://api.github.com/users/LLM-Dev-Ops/orgs",
+            "repos_url": "https://api.github.com/users/LLM-Dev-Ops/repos",
+            "events_url": "https://api.github.com/users/LLM-Dev-Ops/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/LLM-Dev-Ops/received_events",
+            "type": "Organization",
+            "user_view_type": "public",
+            "site_admin": false
+          },
+          "html_url": "https://github.com/LLM-Dev-Ops/shield",
+          "description": null,
+          "fork": false,
+          "url": "https://api.github.com/repos/LLM-Dev-Ops/shield",
+          "forks_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/forks",
+          "keys_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/keys{/key_id}",
+          "collaborators_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/collaborators{/collaborator}",
+          "teams_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/teams",
+          "hooks_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/hooks",
+          "issue_events_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/issues/events{/number}",
+          "events_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/events",
+          "assignees_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/assignees{/user}",
+          "branches_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/branches{/branch}",
+          "tags_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/tags",
+          "blobs_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/blobs{/sha}",
+          "git_tags_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/tags{/sha}",
+          "git_refs_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/refs{/sha}",
+          "trees_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/trees{/sha}",
+          "statuses_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/statuses/{sha}",
+          "languages_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/languages",
+          "stargazers_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/stargazers",
+          "contributors_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/contributors",
+          "subscribers_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/subscribers",
+          "subscription_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/subscription",
+          "commits_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/commits{/sha}",
+          "git_commits_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/commits{/sha}",
+          "comments_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/comments{/number}",
+          "issue_comment_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/issues/comments{/number}",
+          "contents_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/contents/{+path}",
+          "compare_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/compare/{base}...{head}",
+          "merges_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/merges",
+          "archive_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/{archive_format}{/ref}",
+          "downloads_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/downloads",
+          "issues_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/issues{/number}",
+          "pulls_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/pulls{/number}",
+          "milestones_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/milestones{/number}",
+          "notifications_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/notifications{?since,all,participating}",
+          "labels_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/labels{/name}",
+          "releases_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/releases{/id}",
+          "deployments_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/deployments"
+        },
+        "head_repository": {
+          "id": 1086643702,
+          "node_id": "R_kgDOQMTd9g",
+          "name": "shield",
+          "full_name": "LLM-Dev-Ops/shield",
+          "private": false,
+          "owner": {
+            "login": "LLM-Dev-Ops",
+            "id": 244846782,
+            "node_id": "O_kgDODpgQvg",
+            "avatar_url": "https://avatars.githubusercontent.com/u/244846782?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/LLM-Dev-Ops",
+            "html_url": "https://github.com/LLM-Dev-Ops",
+            "followers_url": "https://api.github.com/users/LLM-Dev-Ops/followers",
+            "following_url": "https://api.github.com/users/LLM-Dev-Ops/following{/other_user}",
+            "gists_url": "https://api.github.com/users/LLM-Dev-Ops/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/LLM-Dev-Ops/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/LLM-Dev-Ops/subscriptions",
+            "organizations_url": "https://api.github.com/users/LLM-Dev-Ops/orgs",
+            "repos_url": "https://api.github.com/users/LLM-Dev-Ops/repos",
+            "events_url": "https://api.github.com/users/LLM-Dev-Ops/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/LLM-Dev-Ops/received_events",
+            "type": "Organization",
+            "user_view_type": "public",
+            "site_admin": false
+          },
+          "html_url": "https://github.com/LLM-Dev-Ops/shield",
+          "description": null,
+          "fork": false,
+          "url": "https://api.github.com/repos/LLM-Dev-Ops/shield",
+          "forks_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/forks",
+          "keys_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/keys{/key_id}",
+          "collaborators_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/collaborators{/collaborator}",
+          "teams_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/teams",
+          "hooks_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/hooks",
+          "issue_events_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/issues/events{/number}",
+          "events_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/events",
+          "assignees_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/assignees{/user}",
+          "branches_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/branches{/branch}",
+          "tags_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/tags",
+          "blobs_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/blobs{/sha}",
+          "git_tags_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/tags{/sha}",
+          "git_refs_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/refs{/sha}",
+          "trees_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/trees{/sha}",
+          "statuses_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/statuses/{sha}",
+          "languages_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/languages",
+          "stargazers_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/stargazers",
+          "contributors_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/contributors",
+          "subscribers_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/subscribers",
+          "subscription_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/subscription",
+          "commits_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/commits{/sha}",
+          "git_commits_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/git/commits{/sha}",
+          "comments_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/comments{/number}",
+          "issue_comment_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/issues/comments{/number}",
+          "contents_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/contents/{+path}",
+          "compare_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/compare/{base}...{head}",
+          "merges_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/merges",
+          "archive_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/{archive_format}{/ref}",
+          "downloads_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/downloads",
+          "issues_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/issues{/number}",
+          "pulls_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/pulls{/number}",
+          "milestones_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/milestones{/number}",
+          "notifications_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/notifications{?since,all,participating}",
+          "labels_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/labels{/name}",
+          "releases_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/releases{/id}",
+          "deployments_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/deployments"
+        }
+      }
+    ]
+  },
+  "evAgentJobs": {
+    "total_count": 1,
+    "jobs": [
+      {
+        "id": 126318508748,
+        "run_id": 41751835758,
+        "workflow_name": "Agents CI",
+        "head_branch": "metaharness/shield-security-hardening-2026-10-12",
+        "run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835758",
+        "run_attempt": 1,
+        "node_id": "CR_kwDOQMTd9s8AAAAdaSt6zA",
+        "head_sha": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+        "url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/jobs/126318508748",
+        "html_url": "https://github.com/LLM-Dev-Ops/shield/actions/runs/41751835758/job/126318508748",
+        "status": "completed",
+        "conclusion": "failure",
+        "created_at": "2026-11-04T01:07:29Z",
+        "started_at": "2026-11-04T01:07:31Z",
+        "completed_at": "2026-11-04T01:07:55Z",
+        "name": "functions",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-04T01:07:31Z",
+            "completed_at": "2026-11-04T01:07:32Z"
+          },
+          {
+            "name": "Checkout",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-11-04T01:07:32Z",
+            "completed_at": "2026-11-04T01:07:33Z"
+          },
+          {
+            "name": "Setup Node.js",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-04T01:07:33Z",
+            "completed_at": "2026-11-04T01:07:38Z"
+          },
+          {
+            "name": "Install locked dependencies",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-04T01:07:38Z",
+            "completed_at": "2026-11-04T01:07:41Z"
+          },
+          {
+            "name": "Build deployable function graph",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-04T01:07:41Z",
+            "completed_at": "2026-11-04T01:07:53Z"
+          },
+          {
+            "name": "Test Cloud Function boundary",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-04T01:07:53Z",
+            "completed_at": "2026-11-04T01:07:54Z"
+          },
+          {
+            "name": "Audit production dependencies",
+            "status": "completed",
+            "conclusion": "failure",
+            "number": 7,
+            "started_at": "2026-11-04T01:07:54Z",
+            "completed_at": "2026-11-04T01:07:54Z"
+          },
+          {
+            "name": "Post Setup Node.js",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 13,
+            "started_at": "2026-11-04T01:07:54Z",
+            "completed_at": "2026-11-04T01:07:54Z"
+          },
+          {
+            "name": "Post Checkout",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 14,
+            "started_at": "2026-11-04T01:07:54Z",
+            "completed_at": "2026-11-04T01:07:54Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-11-04T01:07:54Z",
+            "completed_at": "2026-11-04T01:07:54Z"
+          }
+        ],
+        "check_run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/check-runs/126318508748",
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "runner_id": 1000036100,
+        "runner_name": "GitHub Actions 1000036100",
+        "runner_group_id": 0,
+        "runner_group_name": "GitHub Actions"
+      }
+    ]
+  },
+  "evAgentLog": "2026-11-04T01:07:40.9613419Z 12 vulnerabilities (7 moderate, 3 high, 2 critical)\n2026-11-04T01:07:54.0082724Z \u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n2026-11-04T01:07:54.0101608Z \u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m5 passed\u001b[39m\u001b[22m\u001b[90m (5)\u001b[39m\n2026-11-04T01:07:54.0103753Z \u001b[2m   Duration \u001b[22m 364ms\u001b[2m (transform 51ms, setup 0ms, collect 99ms, tests 31ms, environment 0ms, prepare 55ms)\u001b[22m\n2026-11-04T01:07:54.5617137Z qs : qs.stringify with arrayFormat 'comma' throws an uncaught TypeError on array elements carrying a non-callable own toString (DoS) - https://github.com/advisories/GHSA-6pq8-jhm2-2vcw\n2026-11-04T01:07:54.5626125Z 7 vulnerabilities (5 moderate, 2 high)\n2026-11-04T01:07:54.5723689Z ##[error]Process completed with exit code 1.",
+  "evRustCIJobs": {
+    "total_count": 12,
+    "jobs": [
+      {
+        "id": 126318508405,
+        "run_id": 41751835727,
+        "workflow_name": "CI/CD",
+        "head_branch": "metaharness/shield-security-hardening-2026-10-12",
+        "run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835727",
+        "run_attempt": 1,
+        "node_id": "CR_kwDOQMTd9s8AAAAdaSt5dQ",
+        "head_sha": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+        "url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/jobs/126318508405",
+        "html_url": "https://github.com/LLM-Dev-Ops/shield/actions/runs/41751835727/job/126318508405",
+        "status": "completed",
+        "conclusion": "failure",
+        "created_at": "2026-11-04T01:07:29Z",
+        "started_at": "2026-11-04T01:07:31Z",
+        "completed_at": "2026-11-04T01:08:31Z",
+        "name": "Clippy",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-04T01:07:31Z",
+            "completed_at": "2026-11-04T01:07:32Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-11-04T01:07:32Z",
+            "completed_at": "2026-11-04T01:07:33Z"
+          },
+          {
+            "name": "Run dtolnay/rust-toolchain@stable",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-04T01:07:33Z",
+            "completed_at": "2026-11-04T01:07:34Z"
+          },
+          {
+            "name": "Run cargo clippy --all-targets --all-features -- -D warnings",
+            "status": "completed",
+            "conclusion": "failure",
+            "number": 4,
+            "started_at": "2026-11-04T01:07:34Z",
+            "completed_at": "2026-11-04T01:08:29Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-04T01:08:29Z",
+            "completed_at": "2026-11-04T01:08:29Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 9,
+            "started_at": "2026-11-04T01:08:29Z",
+            "completed_at": "2026-11-04T01:08:29Z"
+          }
+        ],
+        "check_run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/check-runs/126318508405",
+        "labels": [
+          "ubuntu-latest"
+        ],
+        "runner_id": 1000036095,
+        "runner_name": "GitHub Actions 1000036095",
+        "runner_group_id": 0,
+        "runner_group_name": "GitHub Actions"
+      },
+      {
+        "id": 126318508660,
+        "run_id": 41751835727,
+        "workflow_name": "CI/CD",
+        "head_branch": "metaharness/shield-security-hardening-2026-10-12",
+        "run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835727",
+        "run_attempt": 1,
+        "node_id": "CR_kwDOQMTd9s8AAAAdaSt6dA",
+        "head_sha": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+        "url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/jobs/126318508660",
+        "html_url": "https://github.com/LLM-Dev-Ops/shield/actions/runs/41751835727/job/126318508660",
+        "status": "completed",
+        "conclusion": "failure",
+        "created_at": "2026-11-04T01:07:29Z",
+        "started_at": "2026-11-04T01:07:31Z",
+        "completed_at": "2026-11-04T01:07:57Z",
+        "name": "WASM Build",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-04T01:07:31Z",
+            "completed_at": "2026-11-04T01:07:32Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-11-04T01:07:32Z",
+            "completed_at": "2026-11-04T01:07:33Z"
+          },
+          {
+            "name": "Run dtolnay/rust-toolchain@stable",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-04T01:07:33Z",
+            "completed_at": "2026-11-04T01:07:36Z"
+          },
+          {
+            "name": "Install wasm-pack",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-04T01:07:36Z",
+            "completed_at": "2026-11-04T01:07:36Z"
+          },
+          {
+            "name": "Build WASM",
+            "status": "completed",
+            "conclusion": "failure",
+            "number": 5,
+            "started_at": "2026-11-04T01:07:36Z",
+            "completed_at": "2026-11-04T01:07:55Z"
+          },
+          {
+            "name": "Check WASM size",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 6,
+            "started_at": "2026-11-04T01:07:55Z",
+            "completed_at": "2026-11-04T01:07:55Z"
+          },
+          {
+            "name": "Test WASM",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 7,
+            "started_at": "2026-11-04T01:07:55Z",
+            "completed_at": "2026-11-04T01:07:55Z"
+          },
+          {
+            "name": "Upload WASM artifact",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 8,
+            "started_at": "2026-11-04T01:07:55Z",
+            "completed_at": "2026-11-04T01:07:55Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16,
+            "started_at": "2026-11-04T01:07:55Z",
+            "completed_at": "2026-11-04T01:07:55Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-11-04T01:07:55Z",
+            "completed_at": "2026-11-04T01:07:55Z"
+          }
+        ],
+        "check_run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/check-runs/126318508660",
+        "labels": [
+          "ubuntu-latest"
+        ],
+        "runner_id": 1000036102,
+        "runner_name": "GitHub Actions 1000036102",
+        "runner_group_id": 0,
+        "runner_group_name": "GitHub Actions"
+      },
+      {
+        "id": 126318508736,
+        "run_id": 41751835727,
+        "workflow_name": "CI/CD",
+        "head_branch": "metaharness/shield-security-hardening-2026-10-12",
+        "run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835727",
+        "run_attempt": 1,
+        "node_id": "CR_kwDOQMTd9s8AAAAdaSt6wA",
+        "head_sha": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+        "url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/jobs/126318508736",
+        "html_url": "https://github.com/LLM-Dev-Ops/shield/actions/runs/41751835727/job/126318508736",
+        "status": "in_progress",
+        "conclusion": null,
+        "created_at": "2026-11-04T01:07:29Z",
+        "started_at": "2026-11-04T01:07:31Z",
+        "completed_at": null,
+        "name": "Code Coverage",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-04T01:07:31Z",
+            "completed_at": "2026-11-04T01:07:32Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-11-04T01:07:32Z",
+            "completed_at": "2026-11-04T01:07:38Z"
+          },
+          {
+            "name": "Run dtolnay/rust-toolchain@stable",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-04T01:07:38Z",
+            "completed_at": "2026-11-04T01:07:39Z"
+          },
+          {
+            "name": "Install tarpaulin",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 4,
+            "started_at": "2026-11-04T01:07:39Z",
+            "completed_at": null
+          },
+          {
+            "name": "Generate coverage",
+            "status": "pending",
+            "conclusion": null,
+            "number": 5,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Upload to codecov",
+            "status": "pending",
+            "conclusion": null,
+            "number": 6,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "pending",
+            "conclusion": null,
+            "number": 12,
+            "started_at": null,
+            "completed_at": null
+          }
+        ],
+        "check_run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/check-runs/126318508736",
+        "labels": [
+          "ubuntu-latest"
+        ],
+        "runner_id": 1000036104,
+        "runner_name": "GitHub Actions 1000036104",
+        "runner_group_id": 0,
+        "runner_group_name": "GitHub Actions"
+      },
+      {
+        "id": 126318508746,
+        "run_id": 41751835727,
+        "workflow_name": "CI/CD",
+        "head_branch": "metaharness/shield-security-hardening-2026-10-12",
+        "run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835727",
+        "run_attempt": 1,
+        "node_id": "CR_kwDOQMTd9s8AAAAdaSt6yg",
+        "head_sha": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+        "url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/jobs/126318508746",
+        "html_url": "https://github.com/LLM-Dev-Ops/shield/actions/runs/41751835727/job/126318508746",
+        "status": "completed",
+        "conclusion": "failure",
+        "created_at": "2026-11-04T01:07:29Z",
+        "started_at": "2026-11-04T01:07:31Z",
+        "completed_at": "2026-11-04T01:07:41Z",
+        "name": "Rustfmt",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-04T01:07:31Z",
+            "completed_at": "2026-11-04T01:07:32Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-11-04T01:07:32Z",
+            "completed_at": "2026-11-04T01:07:33Z"
+          },
+          {
+            "name": "Run dtolnay/rust-toolchain@stable",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-04T01:07:33Z",
+            "completed_at": "2026-11-04T01:07:35Z"
+          },
+          {
+            "name": "Run cargo fmt --all -- --check",
+            "status": "completed",
+            "conclusion": "failure",
+            "number": 4,
+            "started_at": "2026-11-04T01:07:35Z",
+            "completed_at": "2026-11-04T01:07:39Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-11-04T01:07:39Z",
+            "completed_at": "2026-11-04T01:07:39Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 9,
+            "started_at": "2026-11-04T01:07:39Z",
+            "completed_at": "2026-11-04T01:07:39Z"
+          }
+        ],
+        "check_run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/check-runs/126318508746",
+        "labels": [
+          "ubuntu-latest"
+        ],
+        "runner_id": 1000036103,
+        "runner_name": "GitHub Actions 1000036103",
+        "runner_group_id": 0,
+        "runner_group_name": "GitHub Actions"
+      },
+      {
+        "id": 126318508750,
+        "run_id": 41751835727,
+        "workflow_name": "CI/CD",
+        "head_branch": "metaharness/shield-security-hardening-2026-10-12",
+        "run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835727",
+        "run_attempt": 1,
+        "node_id": "CR_kwDOQMTd9s8AAAAdaSt6zg",
+        "head_sha": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+        "url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/jobs/126318508750",
+        "html_url": "https://github.com/LLM-Dev-Ops/shield/actions/runs/41751835727/job/126318508750",
+        "status": "in_progress",
+        "conclusion": null,
+        "created_at": "2026-11-04T01:07:29Z",
+        "started_at": "2026-11-04T01:07:32Z",
+        "completed_at": null,
+        "name": "Test Suite (macos-latest, stable)",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-04T01:07:33Z",
+            "completed_at": "2026-11-04T01:07:35Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-11-04T01:07:35Z",
+            "completed_at": "2026-11-04T01:07:37Z"
+          },
+          {
+            "name": "Install Rust",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-04T01:07:37Z",
+            "completed_at": "2026-11-04T01:07:39Z"
+          },
+          {
+            "name": "Cache cargo registry",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-04T01:07:39Z",
+            "completed_at": "2026-11-04T01:07:39Z"
+          },
+          {
+            "name": "Cache cargo index",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-04T01:07:39Z",
+            "completed_at": "2026-11-04T01:07:40Z"
+          },
+          {
+            "name": "Cache cargo build",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-04T01:07:40Z",
+            "completed_at": "2026-11-04T01:07:41Z"
+          },
+          {
+            "name": "Run tests",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 7,
+            "started_at": "2026-11-04T01:07:41Z",
+            "completed_at": null
+          },
+          {
+            "name": "Run doc tests",
+            "status": "pending",
+            "conclusion": null,
+            "number": 8,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Cache cargo build",
+            "status": "pending",
+            "conclusion": null,
+            "number": 13,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Cache cargo index",
+            "status": "pending",
+            "conclusion": null,
+            "number": 14,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Cache cargo registry",
+            "status": "pending",
+            "conclusion": null,
+            "number": 15,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "pending",
+            "conclusion": null,
+            "number": 16,
+            "started_at": null,
+            "completed_at": null
+          }
+        ],
+        "check_run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/check-runs/126318508750",
+        "labels": [
+          "macos-latest"
+        ],
+        "runner_id": 1000036107,
+        "runner_name": "GitHub Actions 1000036107",
+        "runner_group_id": 0,
+        "runner_group_name": "GitHub Actions"
+      },
+      {
+        "id": 126318508832,
+        "run_id": 41751835727,
+        "workflow_name": "CI/CD",
+        "head_branch": "metaharness/shield-security-hardening-2026-10-12",
+        "run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835727",
+        "run_attempt": 1,
+        "node_id": "CR_kwDOQMTd9s8AAAAdaSt7IA",
+        "head_sha": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+        "url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/jobs/126318508832",
+        "html_url": "https://github.com/LLM-Dev-Ops/shield/actions/runs/41751835727/job/126318508832",
+        "status": "in_progress",
+        "conclusion": null,
+        "created_at": "2026-11-04T01:07:29Z",
+        "started_at": "2026-11-04T01:07:31Z",
+        "completed_at": null,
+        "name": "Security Audit",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-04T01:07:32Z",
+            "completed_at": "2026-11-04T01:07:33Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-11-04T01:07:33Z",
+            "completed_at": "2026-11-04T01:07:34Z"
+          },
+          {
+            "name": "Run dtolnay/rust-toolchain@stable",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-04T01:07:34Z",
+            "completed_at": "2026-11-04T01:07:35Z"
+          },
+          {
+            "name": "Install cargo-audit",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 4,
+            "started_at": "2026-11-04T01:07:35Z",
+            "completed_at": null
+          },
+          {
+            "name": "Run security audit",
+            "status": "pending",
+            "conclusion": null,
+            "number": 5,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "pending",
+            "conclusion": null,
+            "number": 10,
+            "started_at": null,
+            "completed_at": null
+          }
+        ],
+        "check_run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/check-runs/126318508832",
+        "labels": [
+          "ubuntu-latest"
+        ],
+        "runner_id": 1000036105,
+        "runner_name": "GitHub Actions 1000036105",
+        "runner_group_id": 0,
+        "runner_group_name": "GitHub Actions"
+      },
+      {
+        "id": 126318508850,
+        "run_id": 41751835727,
+        "workflow_name": "CI/CD",
+        "head_branch": "metaharness/shield-security-hardening-2026-10-12",
+        "run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835727",
+        "run_attempt": 1,
+        "node_id": "CR_kwDOQMTd9s8AAAAdaSt7Mg",
+        "head_sha": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+        "url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/jobs/126318508850",
+        "html_url": "https://github.com/LLM-Dev-Ops/shield/actions/runs/41751835727/job/126318508850",
+        "status": "in_progress",
+        "conclusion": null,
+        "created_at": "2026-11-04T01:07:29Z",
+        "started_at": "2026-11-04T01:07:31Z",
+        "completed_at": null,
+        "name": "Test Suite (windows-latest, beta)",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-04T01:07:32Z",
+            "completed_at": "2026-11-04T01:07:32Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-11-04T01:07:32Z",
+            "completed_at": "2026-11-04T01:07:38Z"
+          },
+          {
+            "name": "Install Rust",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-04T01:07:38Z",
+            "completed_at": "2026-11-04T01:07:51Z"
+          },
+          {
+            "name": "Cache cargo registry",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-04T01:07:51Z",
+            "completed_at": "2026-11-04T01:07:52Z"
+          },
+          {
+            "name": "Cache cargo index",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-04T01:07:52Z",
+            "completed_at": "2026-11-04T01:07:53Z"
+          },
+          {
+            "name": "Cache cargo build",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-04T01:07:53Z",
+            "completed_at": "2026-11-04T01:07:53Z"
+          },
+          {
+            "name": "Run tests",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 7,
+            "started_at": "2026-11-04T01:07:53Z",
+            "completed_at": null
+          },
+          {
+            "name": "Run doc tests",
+            "status": "pending",
+            "conclusion": null,
+            "number": 8,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Cache cargo build",
+            "status": "pending",
+            "conclusion": null,
+            "number": 13,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Cache cargo index",
+            "status": "pending",
+            "conclusion": null,
+            "number": 14,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Cache cargo registry",
+            "status": "pending",
+            "conclusion": null,
+            "number": 15,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "pending",
+            "conclusion": null,
+            "number": 16,
+            "started_at": null,
+            "completed_at": null
+          }
+        ],
+        "check_run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/check-runs/126318508850",
+        "labels": [
+          "windows-latest"
+        ],
+        "runner_id": 1000036109,
+        "runner_name": "GitHub Actions 1000036109",
+        "runner_group_id": 0,
+        "runner_group_name": "GitHub Actions"
+      },
+      {
+        "id": 126318508881,
+        "run_id": 41751835727,
+        "workflow_name": "CI/CD",
+        "head_branch": "metaharness/shield-security-hardening-2026-10-12",
+        "run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835727",
+        "run_attempt": 1,
+        "node_id": "CR_kwDOQMTd9s8AAAAdaSt7UQ",
+        "head_sha": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+        "url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/jobs/126318508881",
+        "html_url": "https://github.com/LLM-Dev-Ops/shield/actions/runs/41751835727/job/126318508881",
+        "status": "in_progress",
+        "conclusion": null,
+        "created_at": "2026-11-04T01:07:29Z",
+        "started_at": "2026-11-04T01:07:31Z",
+        "completed_at": null,
+        "name": "Test Suite (ubuntu-latest, stable)",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-04T01:07:31Z",
+            "completed_at": "2026-11-04T01:07:32Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-11-04T01:07:32Z",
+            "completed_at": "2026-11-04T01:07:33Z"
+          },
+          {
+            "name": "Install Rust",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-04T01:07:33Z",
+            "completed_at": "2026-11-04T01:07:34Z"
+          },
+          {
+            "name": "Cache cargo registry",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-04T01:07:34Z",
+            "completed_at": "2026-11-04T01:07:34Z"
+          },
+          {
+            "name": "Cache cargo index",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-04T01:07:34Z",
+            "completed_at": "2026-11-04T01:07:34Z"
+          },
+          {
+            "name": "Cache cargo build",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-04T01:07:34Z",
+            "completed_at": "2026-11-04T01:07:34Z"
+          },
+          {
+            "name": "Run tests",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 7,
+            "started_at": "2026-11-04T01:07:34Z",
+            "completed_at": null
+          },
+          {
+            "name": "Run doc tests",
+            "status": "pending",
+            "conclusion": null,
+            "number": 8,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Cache cargo build",
+            "status": "pending",
+            "conclusion": null,
+            "number": 13,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Cache cargo index",
+            "status": "pending",
+            "conclusion": null,
+            "number": 14,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Cache cargo registry",
+            "status": "pending",
+            "conclusion": null,
+            "number": 15,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "pending",
+            "conclusion": null,
+            "number": 16,
+            "started_at": null,
+            "completed_at": null
+          }
+        ],
+        "check_run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/check-runs/126318508881",
+        "labels": [
+          "ubuntu-latest"
+        ],
+        "runner_id": 1000036106,
+        "runner_name": "GitHub Actions 1000036106",
+        "runner_group_id": 0,
+        "runner_group_name": "GitHub Actions"
+      },
+      {
+        "id": 126318508893,
+        "run_id": 41751835727,
+        "workflow_name": "CI/CD",
+        "head_branch": "metaharness/shield-security-hardening-2026-10-12",
+        "run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835727",
+        "run_attempt": 1,
+        "node_id": "CR_kwDOQMTd9s8AAAAdaSt7XQ",
+        "head_sha": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+        "url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/jobs/126318508893",
+        "html_url": "https://github.com/LLM-Dev-Ops/shield/actions/runs/41751835727/job/126318508893",
+        "status": "in_progress",
+        "conclusion": null,
+        "created_at": "2026-11-04T01:07:29Z",
+        "started_at": "2026-11-04T01:07:31Z",
+        "completed_at": null,
+        "name": "Test Suite (macos-latest, beta)",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-04T01:07:31Z",
+            "completed_at": "2026-11-04T01:07:32Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-11-04T01:07:32Z",
+            "completed_at": "2026-11-04T01:07:35Z"
+          },
+          {
+            "name": "Install Rust",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-04T01:07:35Z",
+            "completed_at": "2026-11-04T01:07:45Z"
+          },
+          {
+            "name": "Cache cargo registry",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-04T01:07:45Z",
+            "completed_at": "2026-11-04T01:07:45Z"
+          },
+          {
+            "name": "Cache cargo index",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-04T01:07:45Z",
+            "completed_at": "2026-11-04T01:07:46Z"
+          },
+          {
+            "name": "Cache cargo build",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-04T01:07:46Z",
+            "completed_at": "2026-11-04T01:07:47Z"
+          },
+          {
+            "name": "Run tests",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 7,
+            "started_at": "2026-11-04T01:07:47Z",
+            "completed_at": null
+          },
+          {
+            "name": "Run doc tests",
+            "status": "pending",
+            "conclusion": null,
+            "number": 8,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Cache cargo build",
+            "status": "pending",
+            "conclusion": null,
+            "number": 13,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Cache cargo index",
+            "status": "pending",
+            "conclusion": null,
+            "number": 14,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Cache cargo registry",
+            "status": "pending",
+            "conclusion": null,
+            "number": 15,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "pending",
+            "conclusion": null,
+            "number": 16,
+            "started_at": null,
+            "completed_at": null
+          }
+        ],
+        "check_run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/check-runs/126318508893",
+        "labels": [
+          "macos-latest"
+        ],
+        "runner_id": 1000036108,
+        "runner_name": "GitHub Actions 1000036108",
+        "runner_group_id": 0,
+        "runner_group_name": "GitHub Actions"
+      },
+      {
+        "id": 126318508973,
+        "run_id": 41751835727,
+        "workflow_name": "CI/CD",
+        "head_branch": "metaharness/shield-security-hardening-2026-10-12",
+        "run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835727",
+        "run_attempt": 1,
+        "node_id": "CR_kwDOQMTd9s8AAAAdaSt7rQ",
+        "head_sha": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+        "url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/jobs/126318508973",
+        "html_url": "https://github.com/LLM-Dev-Ops/shield/actions/runs/41751835727/job/126318508973",
+        "status": "in_progress",
+        "conclusion": null,
+        "created_at": "2026-11-04T01:07:29Z",
+        "started_at": "2026-11-04T01:07:31Z",
+        "completed_at": null,
+        "name": "Test Suite (windows-latest, stable)",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-04T01:07:31Z",
+            "completed_at": "2026-11-04T01:07:32Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-11-04T01:07:32Z",
+            "completed_at": "2026-11-04T01:07:38Z"
+          },
+          {
+            "name": "Install Rust",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-04T01:07:38Z",
+            "completed_at": "2026-11-04T01:07:45Z"
+          },
+          {
+            "name": "Cache cargo registry",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-04T01:07:45Z",
+            "completed_at": "2026-11-04T01:07:46Z"
+          },
+          {
+            "name": "Cache cargo index",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-04T01:07:46Z",
+            "completed_at": "2026-11-04T01:07:46Z"
+          },
+          {
+            "name": "Cache cargo build",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-04T01:07:46Z",
+            "completed_at": "2026-11-04T01:07:47Z"
+          },
+          {
+            "name": "Run tests",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 7,
+            "started_at": "2026-11-04T01:07:47Z",
+            "completed_at": null
+          },
+          {
+            "name": "Run doc tests",
+            "status": "pending",
+            "conclusion": null,
+            "number": 8,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Cache cargo build",
+            "status": "pending",
+            "conclusion": null,
+            "number": 13,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Cache cargo index",
+            "status": "pending",
+            "conclusion": null,
+            "number": 14,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Cache cargo registry",
+            "status": "pending",
+            "conclusion": null,
+            "number": 15,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "pending",
+            "conclusion": null,
+            "number": 16,
+            "started_at": null,
+            "completed_at": null
+          }
+        ],
+        "check_run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/check-runs/126318508973",
+        "labels": [
+          "windows-latest"
+        ],
+        "runner_id": 1000036110,
+        "runner_name": "GitHub Actions 1000036110",
+        "runner_group_id": 0,
+        "runner_group_name": "GitHub Actions"
+      },
+      {
+        "id": 126318509071,
+        "run_id": 41751835727,
+        "workflow_name": "CI/CD",
+        "head_branch": "metaharness/shield-security-hardening-2026-10-12",
+        "run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835727",
+        "run_attempt": 1,
+        "node_id": "CR_kwDOQMTd9s8AAAAdaSt8Dw",
+        "head_sha": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+        "url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/jobs/126318509071",
+        "html_url": "https://github.com/LLM-Dev-Ops/shield/actions/runs/41751835727/job/126318509071",
+        "status": "in_progress",
+        "conclusion": null,
+        "created_at": "2026-11-04T01:07:29Z",
+        "started_at": "2026-11-04T01:07:31Z",
+        "completed_at": null,
+        "name": "Test Suite (ubuntu-latest, beta)",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-04T01:07:32Z",
+            "completed_at": "2026-11-04T01:07:33Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-11-04T01:07:33Z",
+            "completed_at": "2026-11-04T01:07:35Z"
+          },
+          {
+            "name": "Install Rust",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-04T01:07:35Z",
+            "completed_at": "2026-11-04T01:07:44Z"
+          },
+          {
+            "name": "Cache cargo registry",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-11-04T01:07:44Z",
+            "completed_at": "2026-11-04T01:07:44Z"
+          },
+          {
+            "name": "Cache cargo index",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-11-04T01:07:44Z",
+            "completed_at": "2026-11-04T01:07:45Z"
+          },
+          {
+            "name": "Cache cargo build",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-11-04T01:07:45Z",
+            "completed_at": "2026-11-04T01:07:45Z"
+          },
+          {
+            "name": "Run tests",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 7,
+            "started_at": "2026-11-04T01:07:45Z",
+            "completed_at": null
+          },
+          {
+            "name": "Run doc tests",
+            "status": "pending",
+            "conclusion": null,
+            "number": 8,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Cache cargo build",
+            "status": "pending",
+            "conclusion": null,
+            "number": 13,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Cache cargo index",
+            "status": "pending",
+            "conclusion": null,
+            "number": 14,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Cache cargo registry",
+            "status": "pending",
+            "conclusion": null,
+            "number": 15,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "pending",
+            "conclusion": null,
+            "number": 16,
+            "started_at": null,
+            "completed_at": null
+          }
+        ],
+        "check_run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/check-runs/126318509071",
+        "labels": [
+          "ubuntu-latest"
+        ],
+        "runner_id": 1000036112,
+        "runner_name": "GitHub Actions 1000036112",
+        "runner_group_id": 0,
+        "runner_group_name": "GitHub Actions"
+      },
+      {
+        "id": 126318509078,
+        "run_id": 41751835727,
+        "workflow_name": "CI/CD",
+        "head_branch": "metaharness/shield-security-hardening-2026-10-12",
+        "run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/runs/41751835727",
+        "run_attempt": 1,
+        "node_id": "CR_kwDOQMTd9s8AAAAdaSt8Fg",
+        "head_sha": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+        "url": "https://api.github.com/repos/LLM-Dev-Ops/shield/actions/jobs/126318509078",
+        "html_url": "https://github.com/LLM-Dev-Ops/shield/actions/runs/41751835727/job/126318509078",
+        "status": "in_progress",
+        "conclusion": null,
+        "created_at": "2026-11-04T01:07:29Z",
+        "started_at": "2026-11-04T01:07:31Z",
+        "completed_at": null,
+        "name": "Performance Benchmarks",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-11-04T01:07:32Z",
+            "completed_at": "2026-11-04T01:07:34Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-11-04T01:07:34Z",
+            "completed_at": "2026-11-04T01:07:35Z"
+          },
+          {
+            "name": "Run dtolnay/rust-toolchain@stable",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-11-04T01:07:35Z",
+            "completed_at": "2026-11-04T01:07:40Z"
+          },
+          {
+            "name": "Run benchmarks",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 4,
+            "started_at": "2026-11-04T01:07:40Z",
+            "completed_at": null
+          },
+          {
+            "name": "Store benchmark result",
+            "status": "pending",
+            "conclusion": null,
+            "number": 5,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "pending",
+            "conclusion": null,
+            "number": 10,
+            "started_at": null,
+            "completed_at": null
+          }
+        ],
+        "check_run_url": "https://api.github.com/repos/LLM-Dev-Ops/shield/check-runs/126318509078",
+        "labels": [
+          "ubuntu-latest"
+        ],
+        "runner_id": 1000036111,
+        "runner_name": "GitHub Actions 1000036111",
+        "runner_group_id": 0,
+        "runner_group_name": "GitHub Actions"
+      }
+    ]
+  }
+}

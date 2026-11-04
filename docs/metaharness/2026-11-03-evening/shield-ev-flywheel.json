@@ -1,0 +1,430 @@
+{
+  "scope": "Actual built wrapper, not Rust/WASM detection efficacy. Full acceptance fail-closed. Cost axes neutral, unmeasured; no speedup claim.",
+  "baselineSHA": "f0c74aec78b0df4e4760562dfcfb12c8abc4368a",
+  "candidateSHA": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+  "observations": [
+    {
+      "revision": "f0c74aec78b0df4e4760562dfcfb12c8abc4368a",
+      "suite": "constructor-holdout",
+      "holdout": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "anchor": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "ms": 139.83525400000008
+    },
+    {
+      "revision": "f0c74aec78b0df4e4760562dfcfb12c8abc4368a",
+      "suite": "constructor-anchor",
+      "holdout": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "anchor": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "ms": 171.02685499999984
+    },
+    {
+      "revision": "34977db60672ef149c56a7bae2a844f5f0d0ac72",
+      "suite": "constructor-holdout",
+      "holdout": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "anchor": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "ms": 146.09071200000017
+    }
+  ],
+  "trials": [
+    {
+      "trial": 0,
+      "root": "/tmp/shield-ev-baseline-built",
+      "holdout": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "anchor": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "ms": 215.52008299999997
+    },
+    {
+      "trial": 0,
+      "root": "/tmp/shield-nov03ev/packages/core",
+      "holdout": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "anchor": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "ms": 162.69895699999995
+    },
+    {
+      "trial": 1,
+      "root": "/tmp/shield-nov03ev/packages/core",
+      "holdout": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "anchor": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "ms": 180.30235500000003
+    },
+    {
+      "trial": 1,
+      "root": "/tmp/shield-ev-baseline-built",
+      "holdout": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "anchor": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "ms": 142.82782299999997
+    },
+    {
+      "trial": 2,
+      "root": "/tmp/shield-ev-baseline-built",
+      "holdout": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "anchor": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "ms": 154.51948500000003
+    },
+    {
+      "trial": 2,
+      "root": "/tmp/shield-nov03ev/packages/core",
+      "holdout": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "anchor": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "ms": 140.32131700000002
+    },
+    {
+      "trial": 3,
+      "root": "/tmp/shield-nov03ev/packages/core",
+      "holdout": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "anchor": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "ms": 165.71832800000016
+    },
+    {
+      "trial": 3,
+      "root": "/tmp/shield-ev-baseline-built",
+      "holdout": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "anchor": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "ms": 149.02370399999995
+    },
+    {
+      "trial": 4,
+      "root": "/tmp/shield-ev-baseline-built",
+      "holdout": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "anchor": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "ms": 145.46769300000005
+    },
+    {
+      "trial": 4,
+      "root": "/tmp/shield-nov03ev/packages/core",
+      "holdout": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "anchor": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "ms": 135.290297
+    }
+  ],
+  "benchmark": {
+    "/tmp/shield-ev-baseline-built": {
+      "medianMs": 149.02370399999995,
+      "holdouts": 0,
+      "anchors": 40
+    },
+    "/tmp/shield-nov03ev/packages/core": {
+      "medianMs": 162.69895699999995,
+      "holdouts": 25,
+      "anchors": 40
+    }
+  },
+  "replay": {
+    "pass": true,
+    "checks": {
+      "receipts": true,
+      "reachesRoot": true,
+      "contiguousParents": true,
+      "allPromoted": true,
+      "gateUnchanged": true,
+      "gateReExecutes": true,
+      "allCommitsReceipts": true,
+      "sealedFieldsAuthentic": true
+    },
+    "failures": [],
+    "chainSummary": "gen0(root)"
+  },
+  "bundle": {
+    "data_source": "LIVE",
+    "root_id": "root",
+    "chain": [
+      {
+        "id": "root",
+        "generation": 0,
+        "parents": [],
+        "mutation": null,
+        "primaryDelta": 0,
+        "anchorScore": 1,
+        "verdict": "ROOT",
+        "failureReasons": [],
+        "receipt": {
+          "payload": {
+            "kind": "root",
+            "root": "root"
+          },
+          "signature": "M+sEBsOQ1K1M4NB1gwh+o45iUHW75Uf5BGpQntV4n/LQWLNGnENz3U35Wu462K0DZOXPCmkTr+yJQioWyPIlAw==",
+          "publicKey": "MCowBQYDK2VwAyEAjupSavHTnsNQHeipNGOPUg09fBrUGlSej4HdGS8qlCs=",
+          "alg": "ed25519"
+        },
+        "createdAt": "2026-11-03-evening-generation-0"
+      }
+    ],
+    "all_commits": [
+      {
+        "id": "root__revision_gen1",
+        "generation": 1,
+        "parents": [
+          "root"
+        ],
+        "mutation": {
+          "target": "revision",
+          "summary": "Reject explicitly malformed falsy scanner configuration",
+          "inverse": {
+            "path": "packages/core/src/shield.ts",
+            "parentBytes": "/**\n * Main LLMShield class - High-level API\n *\n * @module shield\n */\n\nimport type {\n  LLMShieldConfig,\n  ScanOptions,\n  ScanResult,\n  ScannerInfo,\n  BatchScanResult,\n  CacheStats,\n  ScannerType,\n} from './types';\nimport { InitializationError, ScanError, ValidationError } from './types';\nimport { createScanMetadata } from './utils';\n\n/**\n * Main LLMShield class providing high-level security scanning API\n *\n * @example\n * ```typescript\n * const shield = new LLMShield({\n *   cache: { maxSize: 1000, ttlSeconds: 3600 },\n *   scanners: ['toxicity', 'prompt-injection'],\n * });\n *\n * const result = await shield.scanPrompt('Hello world');\n * console.log(result.isValid); // true\n * ```\n */\nexport class LLMShield {\n  private config: Required<LLMShieldConfig>;\n  private initialized: boolean = false;\n  private initPromise: Promise<void> | null = null;\n  private cache: Map<string, { result: ScanResult; timestamp: number }>;\n  private scanCount: number = 0;\n  private cacheHits: number = 0;\n  private cacheMisses: number = 0;\n\n  /**\n   * Create a new LLMShield instance\n   *\n   * @param config - Configuration options\n   */\n  constructor(config: LLMShieldConfig = {}) {\n    this.config = {\n      cache: config.cache || { maxSize: 1000, ttlSeconds: 3600 },\n      scanners: config.scanners || [],\n      models: config.models || {\n        enabled: false,\n        variant: 'INT8',\n        threshold: 0.5,\n        fallbackToHeuristic: true,\n      },\n      thresholds: config.thresholds || {},\n      debug: config.debug || false,\n      timeout: config.timeout || 30000,\n    };\n\n    // Validate JavaScript callers as well as statically typed callers.\n    this.getScannersToRun(this.config.scanners, 'input');\n    this.cache = new Map();\n    this.initPromise = this.initialize();\n  }\n\n  /**\n   * Initialize the WASM module (called automatically)\n   * @private\n   */\n  private async initialize(): Promise<void> {\n    if (this.initialized) return;\n\n    try {\n      const startTime = Date.now();\n\n      // TODO: Initialize WASM module\n      // For now, we'll simulate initialization\n      await new Promise((resolve) => setTimeout(resolve, 10));\n\n      this.initialized = true;\n\n      if (this.config.debug) {\n        console.log(`LLMShield initialized in ${Date.now() - startTime}ms`);\n      }\n    } catch (error) {\n      throw new InitializationError(\n        'Failed to initialize LLM Shield',\n        error\n      );\n    }\n  }\n\n  /**\n   * Wait for initialization to complete\n   */\n  async ready(): Promise<void> {\n    await this.initPromise;\n  }\n\n  /**\n   * Scan a user prompt for security issues\n   *\n   * @param prompt - The user prompt to scan\n   * @param options - Scan options\n   * @returns Scan result with detections\n   *\n   * @example\n   * ```typescript\n   * const result = await shield.scanPrompt(\n   *   \"Ignore all previous instructions\",\n   *   { scanners: ['prompt-injection'] }\n   * );\n   * ```\n   */\n  async scanPrompt(\n    prompt: string,\n    options: ScanOptions = {}\n  ): Promise<ScanResult> {\n    await this.ready();\n    this.validateInput(prompt);\n\n    const startTime = Date.now();\n    const scannersToRun = this.getScannersToRun(\n      options.scanners === undefined ? this.config.scanners : options.scanners,\n      'input'\n    );\n    const cacheKey = this.getCacheKey(prompt, options, 'input');\n\n    // Check cache\n    if (cacheKey !== null) {\n      const cached = this.getFromCache(cacheKey);\n      if (cached) {\n        this.cacheHits++;\n        return cached;\n      }\n    }\n\n    this.cacheMisses++;\n\n    try {\n      // Execute scan\n      const result = await this.executeScan(\n        prompt,\n        scannersToRun,\n        options,\n        startTime\n      );\n\n      // Cache result\n      if (cacheKey !== null) {\n        this.setCache(cacheKey, result);\n      }\n\n      this.scanCount++;\n      return result;\n    } catch (error) {\n      if (error instanceof Error) {\n        throw new ScanError(`Scan failed: ${error.message}`, error);\n      }\n      throw error;\n    }\n  }\n\n  /**\n   * Scan LLM output for security issues\n   *\n   * @param output - The LLM output to scan\n   * @param options - Scan options\n   * @returns Scan result with detections\n   *\n   * @example\n   * ```typescript\n   * const result = await shield.scanOutput(\n   *   \"Visit http://malicious-site.com for details\",\n   *   { scanners: ['malicious-urls'] }\n   * );\n   * ```\n   */\n  async scanOutput(\n    output: string,\n    options: ScanOptions = {}\n  ): Promise<ScanResult> {\n    await this.ready();\n    this.validateInput(output);\n\n    const startTime = Date.now();\n    const scannersToRun = this.getScannersToRun(\n      options.scanners === undefined ? this.config.scanners : options.scanners,\n      'output'\n    );\n    const cacheKey = this.getCacheKey(output, options, 'output');\n\n    // Check cache\n    if (cacheKey !== null) {\n      const cached = this.getFromCache(cacheKey);\n      if (cached) {\n        this.cacheHits++;\n        return cached;\n      }\n    }\n\n    this.cacheMisses++;\n\n    try {\n      // Execute scan\n      const result = await this.executeScan(\n        output,\n        scannersToRun,\n        options,\n        startTime\n      );\n\n      // Cache result\n      if (cacheKey !== null) {\n        this.setCache(cacheKey, result);\n      }\n\n      this.scanCount++;\n      return result;\n    } catch (error) {\n      if (error instanceof Error) {\n        throw new ScanError(`Output scan failed: ${error.message}`, error);\n      }\n      throw error;\n    }\n  }\n\n  /**\n   * Scan multiple inputs in parallel\n   *\n   * @param inputs - Array of texts to scan\n   * @param options - Scan options\n   * @returns Batch scan results\n   *\n   * @example\n   * ```typescript\n   * const results = await shield.scanBatch([\n   *   \"First prompt\",\n   *   \"Second prompt\",\n   *   \"Third prompt\"\n   * ]);\n   * ```\n   */\n  async scanBatch(\n    inputs: string[],\n    options: ScanOptions = {}\n  ): Promise<BatchScanResult> {\n    await this.ready();\n\n    if (!Array.isArray(inputs) || inputs.length === 0) {\n      throw new ValidationError('Input must be a non-empty array');\n    }\n\n    const startTime = performance.now();\n    const results: ScanResult[] = [];\n    const errors: Array<{ index: number; error: string }> = [];\n\n    // Process in parallel with concurrency limit\n    const concurrency = 5;\n    const chunks: string[][] = [];\n\n    for (let i = 0; i < inputs.length; i += concurrency) {\n      chunks.push(inputs.slice(i, i + concurrency));\n    }\n\n    for (const [chunkIndex, chunk] of chunks.entries()) {\n      const promises = chunk.map(async (input, idx) => {\n        try {\n          return await this.scanPrompt(input, options);\n        } catch (error) {\n          errors.push({\n            index: chunkIndex * concurrency + idx,\n            error: error instanceof Error ? error.message : String(error),\n          });\n          // Return a failed result\n          return {\n            isValid: false,\n            riskScore: 1.0,\n            detections: [{\n              scanner: 'error' as ScannerType,\n              type: 'scan-error',\n              severity: 'critical' as const,\n              score: 1.0,\n              description: `Scan failed: ${error instanceof Error ? error.message : String(error)}`,\n            }],\n            scannerResults: [],\n            metadata: createScanMetadata(performance.now() - startTime, 0, false),\n          } as ScanResult;\n        }\n      });\n\n      const chunkResults = await Promise.all(promises);\n      results.push(...chunkResults);\n    }\n\n    const totalTimeMs = performance.now() - startTime;\n    const successCount = results.filter((r) => r.isValid || r.detections.length === 0).length;\n    const failureCount = inputs.length - successCount;\n\n    return {\n      results,\n      totalTimeMs,\n      successCount,\n      failureCount,\n      errors: errors.length > 0 ? errors : undefined,\n    };\n  }\n\n  /**\n   * List all available scanners\n   *\n   * @returns Array of scanner information\n   */\n  listScanners(): ScannerInfo[] {\n    return [\n      {\n        name: 'prompt-injection',\n        type: 'input',\n        version: '1.0.0',\n        description: 'Detects prompt injection attempts',\n        enabled: this.isScannerEnabled('prompt-injection'),\n        requiresML: false,\n      },\n      {\n        name: 'toxicity',\n        type: 'bidirectional',\n        version: '1.0.0',\n        description: 'Detects toxic, hateful, or offensive content',\n        enabled: this.isScannerEnabled('toxicity'),\n        requiresML: true,\n      },\n      {\n        name: 'secrets',\n        type: 'input',\n        version: '1.0.0',\n        description: 'Detects API keys, passwords, and tokens',\n        enabled: this.isScannerEnabled('secrets'),\n        requiresML: false,\n      },\n      {\n        name: 'pii',\n        type: 'bidirectional',\n        version: '1.0.0',\n        description: 'Detects personally identifiable information',\n        enabled: this.isScannerEnabled('pii'),\n        requiresML: false,\n      },\n      {\n        name: 'ban-competitors',\n        type: 'bidirectional',\n        version: '1.0.0',\n        description: 'Blocks mentions of competitor names',\n        enabled: this.isScannerEnabled('ban-competitors'),\n        requiresML: false,\n      },\n      {\n        name: 'ban-topics',\n        type: 'bidirectional',\n        version: '1.0.0',\n        description: 'Filters unwanted topics',\n        enabled: this.isScannerEnabled('ban-topics'),\n        requiresML: false,\n      },\n      {\n        name: 'ban-substrings',\n        type: 'bidirectional',\n        version: '1.0.0',\n        description: 'Blocks specific substrings or patterns',\n        enabled: this.isScannerEnabled('ban-substrings'),\n        requiresML: false,\n      },\n      {\n        name: 'malicious-urls',\n        type: 'output',\n        version: '1.0.0',\n        description: 'Detects phishing and malicious URLs',\n        enabled: this.isScannerEnabled('malicious-urls'),\n        requiresML: false,\n      },\n      {\n        name: 'sensitive-output',\n        type: 'output',\n        version: '1.0.0',\n        description: 'Prevents sensitive data leaks in output',\n        enabled: this.isScannerEnabled('sensitive-output'),\n        requiresML: false,\n      },\n      {\n        name: 'url-reachability',\n        type: 'output',\n        version: '1.0.0',\n        description: 'Validates URL accessibility',\n        enabled: this.isScannerEnabled('url-reachability'),\n        requiresML: false,\n      },\n    ];\n  }\n\n  /**\n   * Get cache statistics\n   */\n  getCacheStats(): CacheStats {\n    const total = this.cacheHits + this.cacheMisses;\n    return {\n      hits: this.cacheHits,\n      misses: this.cacheMisses,\n      size: this.cache.size,\n      maxSize: this.config.cache.maxSize,\n      hitRate: total > 0 ? this.cacheHits / total : 0,\n    };\n  }\n\n  /**\n   * Clear the cache\n   */\n  clearCache(): void {\n    this.cache.clear();\n    this.cacheHits = 0;\n    this.cacheMisses = 0;\n  }\n\n  /**\n   * Get debug information\n   */\n  debugInfo() {\n    return {\n      initialized: this.initialized,\n      config: this.config,\n      scanCount: this.scanCount,\n      cacheStats: this.getCacheStats(),\n      scanners: this.listScanners(),\n    };\n  }\n\n  // Private helper methods\n\n  private validateInput(text: string): void {\n    if (typeof text !== 'string') {\n      throw new ValidationError('Input must be a string');\n    }\n    if (text.length === 0) {\n      throw new ValidationError('Input cannot be empty');\n    }\n    if (text.length > 100000) {\n      throw new ValidationError('Input exceeds maximum length of 100,000 characters');\n    }\n  }\n\n  private getCacheKey(\n    text: string,\n    options: ScanOptions,\n    category: 'input' | 'output'\n  ): string | null {\n    // Context can contain cycles or mutable objects. Do not serialize or reuse\n    // context-sensitive results, including future WASM-backed output scans.\n    if (\n      options.skipCache ||\n      options.context !== undefined ||\n      options.originalPrompt !== undefined ||\n      !(this.config.cache.maxSize > 0) ||\n      !(this.config.cache.ttlSeconds > 0)\n    ) {\n      return null;\n    }\n    const scanners = [...(options.scanners || this.config.scanners)].sort();\n    // Keep the exact text: a 32-bit hash is not a security cache identity.\n    return JSON.stringify([category, text, scanners]);\n  }\n\n  private getFromCache(key: string): ScanResult | null {\n    const entry = this.cache.get(key);\n    if (!entry) return null;\n\n    const now = Date.now();\n    const age = (now - entry.timestamp) / 1000;\n\n    if (age >= this.config.cache.ttlSeconds) {\n      this.cache.delete(key);\n      return null;\n    }\n\n    // Refresh recency, not TTL. Callers must never own the cached object graph.\n    this.cache.delete(key);\n    this.cache.set(key, entry);\n    return {\n      ...structuredClone(entry.result),\n      metadata: {\n        ...entry.result.metadata,\n        cached: true,\n      },\n    };\n  }\n\n  private setCache(key: string, result: ScanResult): void {\n    // Implement LRU eviction\n    if (this.cache.size >= this.config.cache.maxSize) {\n      const firstKey = this.cache.keys().next().value;\n      if (firstKey) {\n        this.cache.delete(firstKey);\n      }\n    }\n\n    this.cache.set(key, {\n      result: structuredClone(result),\n      timestamp: Date.now(),\n    });\n  }\n\n  private getScannersToRun(\n    requested: ScannerType[],\n    category: 'input' | 'output'\n  ): ScannerType[] {\n    if (!Array.isArray(requested)) {\n      throw new ValidationError('Scanners must be an array of supported scanner names');\n    }\n    const allScanners = this.listScanners();\n    if ([...requested].some((name) => !allScanners.some((scanner) => scanner.name === name))) {\n      throw new ValidationError('Scanners must contain only supported scanner names');\n    }\n\n    if (requested.length === 0) {\n      // Return all scanners for this category\n      return allScanners\n        .filter((s) => s.type === category || s.type === 'bidirectional')\n        .map((s) => s.name as ScannerType);\n    }\n\n    // Never silently drop an unknown scanner and return a successful empty scan.\n    return [...requested];\n  }\n\n  private isScannerEnabled(name: string): boolean {\n    if (this.config.scanners.length === 0) return true;\n    return this.config.scanners.includes(name as ScannerType);\n  }\n\n  private async executeScan(\n    text: string,\n    scanners: ScannerType[],\n    _options: ScanOptions,\n    startTime: number\n  ): Promise<ScanResult> {\n    // TODO: Integrate with actual WASM scanners\n    // For now, return a mock result based on simple heuristics\n\n    const detections = [];\n    const scannerResults = [];\n\n    // Simple heuristic detection\n    if (scanners.includes('prompt-injection')) {\n      if (this.detectPromptInjection(text)) {\n        detections.push({\n          scanner: 'prompt-injection' as ScannerType,\n          type: 'injection-attempt',\n          severity: 'high' as const,\n          score: 0.9,\n          description: 'Potential prompt injection detected',\n        });\n        scannerResults.push({\n          scanner: 'prompt-injection',\n          isValid: false,\n          riskScore: 0.9,\n          riskFactors: [{\n            type: 'injection',\n            description: 'Instruction override attempt',\n            severity: 'high' as const,\n            score: 0.9,\n          }],\n          entities: [],\n          executionTimeMs: 5,\n        });\n      }\n    }\n\n    if (scanners.includes('secrets')) {\n      const secrets = this.detectSecrets(text);\n      if (secrets.length > 0) {\n        detections.push({\n          scanner: 'secrets' as ScannerType,\n          type: 'secret-detected',\n          severity: 'critical' as const,\n          score: 1.0,\n          description: `Detected ${secrets.length} potential secret(s)`,\n        });\n        scannerResults.push({\n          scanner: 'secrets',\n          isValid: false,\n          riskScore: 1.0,\n          riskFactors: [{\n            type: 'secret',\n            description: 'API key or token detected',\n            severity: 'critical' as const,\n            score: 1.0,\n          }],\n          entities: secrets,\n          executionTimeMs: 3,\n        });\n      }\n    }\n\n    const isValid = detections.length === 0;\n    const riskScore = isValid ? 0.0 : Math.max(...detections.map((d) => d.score), 0);\n    const durationMs = Date.now() - startTime;\n\n    return {\n      isValid,\n      riskScore,\n      detections,\n      sanitizedText: text,\n      scannerResults,\n      metadata: createScanMetadata(durationMs, scanners.length, false),\n    };\n  }\n\n  private detectPromptInjection(text: string): boolean {\n    const patterns = [\n      /ignore\\s+(?:all\\s+)?(?:previous\\s+)?instructions?/i,\n      /disregard\\s+(?:all\\s+)?(?:previous\\s+)?instructions?/i,\n      /forget\\s+(?:all\\s+)?(?:previous\\s+)?instructions?/i,\n      /system\\s*:\\s*/i,\n      /you\\s+are\\s+now\\s+/i,\n      /act\\s+as\\s+(?:if\\s+)?you/i,\n    ];\n\n    return patterns.some((pattern) => pattern.test(text));\n  }\n\n  private detectSecrets(text: string): Array<{\n    entityType: string;\n    text: string;\n    start: number;\n    end: number;\n    confidence?: number;\n  }> {\n    const secrets = [];\n    const patterns = [\n      { type: 'api_key', regex: /\\b[A-Za-z0-9]{32,}\\b/g },\n      { type: 'aws_key', regex: /AKIA[0-9A-Z]{16}/g },\n      { type: 'github_token', regex: /ghp_[a-zA-Z0-9]{36}/g },\n    ];\n\n    for (const { type, regex } of patterns) {\n      let match;\n      while ((match = regex.exec(text)) !== null) {\n        secrets.push({\n          entityType: type,\n          text: match[0],\n          start: match.index,\n          end: match.index + match[0].length,\n          confidence: 0.8,\n        });\n      }\n    }\n\n    return secrets;\n  }\n}\n\n\n",
+            "hash": "a42d72c650ed7587fca8790266a2ce900a31c595b25c787db7c6799c142fbb8a"
+          }
+        },
+        "primaryDelta": 1,
+        "anchorScore": null,
+        "verdict": "REJECTED",
+        "failureReasons": [
+          "safety_regressed"
+        ],
+        "receipt": {
+          "payload": {
+            "kind": "candidate",
+            "id": "root__revision_gen1",
+            "target": "revision",
+            "verdict": "REJECTED",
+            "primaryDelta": 1,
+            "baselineScore": {
+              "primary": 0,
+              "noopRate": 0,
+              "costPerWin": 0,
+              "regressed": true
+            },
+            "candidateScore": {
+              "primary": 1,
+              "noopRate": 0,
+              "costPerWin": 0,
+              "regressed": true
+            },
+            "anchorScore": null,
+            "failureReasons": [
+              "safety_regressed"
+            ],
+            "parents": [
+              "root"
+            ],
+            "generation": 1
+          },
+          "signature": "5XUFE0qJ4fGhas/0N7xth1D6bn8ZEDDbwM+ivELasrOjP1AWXg05d/kicTKF5FD77439RKH39M6YuCC8IowgBQ==",
+          "publicKey": "MCowBQYDK2VwAyEAjupSavHTnsNQHeipNGOPUg09fBrUGlSej4HdGS8qlCs=",
+          "alg": "ed25519"
+        },
+        "createdAt": "2026-11-03-evening-generation-1",
+        "baselineScore": {
+          "primary": 0,
+          "noopRate": 0,
+          "costPerWin": 0,
+          "regressed": true
+        },
+        "candidateScore": {
+          "primary": 1,
+          "noopRate": 0,
+          "costPerWin": 0,
+          "regressed": true
+        }
+      }
+    ],
+    "lift_curve": [
+      {
+        "generation": 0,
+        "primary": 0,
+        "delta": 0,
+        "anchor": 1
+      }
+    ],
+    "gate_fingerprint": "c5942e7c9bf8f28fe7af47a6ec3887d11eeb3f8c8e8601cc6a7a54969ea0b981",
+    "verified_improvements": 0,
+    "anchor_surviving_improvements": 0,
+    "milestone_reached": false,
+    "created_at": "2026-11-03-evening-generation-1"
+  }
+}

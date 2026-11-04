@@ -1,0 +1,40 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> llm-shield-core@0.2.4 test
+> npm run test:unit && npm run test:integration --reporter=json
+
+
+> llm-shield-core@0.2.4 test:unit
+> vitest run tests/unit
+
+
+ RUN  v1.6.1 /tmp/shield-nov03ev/packages/core
+
+stdout | tests/unit/shield.test.ts > LLMShield > initialization > should initialize WASM automatically
+LLMShield initialized in 11ms
+
+ ✓ tests/unit/utils.test.ts  (11 tests) 107ms
+ ✓ tests/unit/shield.test.ts  (24 tests) 191ms
+ ✓ tests/unit/scanner-validation.test.ts  (6 tests) 61ms
+ ✓ tests/unit/quick-scan.test.ts  (3 tests) 37ms
+ ✓ tests/unit/cache-isolation.test.ts  (20 tests) 241ms
+
+ Test Files  5 passed (5)
+      Tests  64 passed (64)
+   Start at  17:05:11
+   Duration  1.49s (transform 178ms, setup 1ms, collect 252ms, tests 637ms, environment 4ms, prepare 557ms)
+
+
+> llm-shield-core@0.2.4 test:integration
+> vitest run tests/integration
+
+
+ RUN  v1.6.1 /tmp/shield-nov03ev/packages/core
+
+ ✓ tests/integration/express.test.ts  (4 tests) 17ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  17:05:13
+   Duration  485ms (transform 110ms, setup 0ms, collect 103ms, tests 17ms, environment 0ms, prepare 131ms)
+

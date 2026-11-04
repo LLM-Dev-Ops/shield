@@ -1,0 +1,68 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> llm-shield-core@0.2.4 test:coverage
+> vitest run --coverage
+
+
+ RUN  v1.6.1 /tmp/shield-nov03ev/packages/core
+      Coverage enabled with v8
+
+stdout | tests/unit/shield.test.ts > LLMShield > initialization > should initialize WASM automatically
+LLMShield initialized in 11ms
+
+ ✓ tests/unit/utils.test.ts  (11 tests) 109ms
+ ✓ tests/unit/shield.test.ts  (24 tests) 198ms
+ ✓ tests/integration/express.test.ts  (4 tests) 16ms
+ ✓ tests/unit/scanner-validation.test.ts  (6 tests) 56ms
+ ✓ tests/unit/quick-scan.test.ts  (3 tests) 40ms
+ ✓ tests/unit/cache-isolation.test.ts  (20 tests) 245ms
+ ✓ tests/unit/constructor-validation.test.ts  (5 tests) 5ms
+
+ Test Files  7 passed (7)
+      Tests  73 passed (73)
+   Start at  17:06:38
+   Duration  1.94s (transform 227ms, setup 3ms, collect 411ms, tests 669ms, environment 2ms, prepare 864ms)
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   49.69 |    78.61 |   70.27 |   49.69 |                   
+ core              |       0 |        0 |       0 |       0 |                   
+  ...ght.config.ts |       0 |        0 |       0 |       0 | 1-16              
+ ...iants/baseline |       0 |        0 |       0 |       0 |                   
+  ...xt_builder.ts |       0 |        0 |       0 |       0 | 1-41              
+  memory_policy.ts |       0 |        0 |       0 |       0 | 1-24              
+  planner.ts       |       0 |        0 |       0 |       0 | 1-32              
+  retry_policy.ts  |       0 |        0 |       0 |       0 | 1-48              
+  reviewer.ts      |       0 |        0 |       0 |       0 | 1-51              
+  score_policy.ts  |       0 |        0 |       0 |       0 | 1-27              
+  tool_policy.ts   |       0 |        0 |       0 |       0 | 1-29              
+ core/examples     |       0 |        0 |       0 |       0 |                   
+  basic-usage.ts   |       0 |        0 |       0 |       0 | 1-54              
+  ...h-scanning.ts |       0 |        0 |       0 |       0 | 1-59              
+  ...middleware.ts |       0 |        0 |       0 |       0 | 1-141             
+ core/security     |   19.04 |    76.66 |   81.48 |   19.04 |                   
+  ...ark-cache.mjs |       0 |        0 |       0 |       0 | 1-12              
+  ...ate-cache.mjs |       0 |        0 |       0 |       0 | 1-54              
+  ...-scanners.mjs |       0 |        0 |       0 |       0 | 1-45              
+  probe-cache.mjs  |     100 |       92 |     100 |     100 | 33-36             
+  ...nstructor.mjs |       0 |        0 |       0 |       0 | 1-17              
+  ...-scanners.mjs |       0 |        0 |       0 |       0 | 1-25              
+ core/src          |    86.7 |    88.69 |    90.9 |    86.7 |                   
+  index.ts         |       0 |        0 |       0 |       0 | 1-19              
+  quick-scan.ts    |     100 |      100 |     100 |     100 |                   
+  shield.ts        |   96.05 |    90.72 |     100 |   96.05 | ...80-482,499-503 
+  utils.ts         |   92.12 |    86.66 |      90 |   92.12 | 22-26,97,124-127  
+  wasm-types.ts    |       0 |        0 |       0 |       0 | 1-66              
+ core/src/browser  |       0 |        0 |       0 |       0 |                   
+  index.ts         |       0 |        0 |       0 |       0 | 1-15              
+ core/src/edge     |       0 |        0 |       0 |       0 |                   
+  index.ts         |       0 |        0 |       0 |       0 | 1-14              
+ core/src/node     |       0 |        0 |       0 |       0 |                   
+  index.ts         |       0 |        0 |       0 |       0 | 1-10              
+-------------------|---------|----------|---------|---------|-------------------
+ERROR: Coverage for lines (49.69%) does not meet global threshold (85%)
+ERROR: Coverage for functions (70.27%) does not meet global threshold (85%)
+ERROR: Coverage for statements (49.69%) does not meet global threshold (85%)
+ERROR: Coverage for branches (78.61%) does not meet global threshold (80%)
