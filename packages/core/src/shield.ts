@@ -13,8 +13,8 @@ import type {
   CacheStats,
   ScannerType,
 } from './types';
-import { InitializationError, ScanError, TimeoutError, ValidationError } from './types';
-import { hashText, createScanMetadata } from './utils';
+import { InitializationError, ScanError, ValidationError } from './types';
+import { createScanMetadata } from './utils';
 
 /**
  * Main LLMShield class providing high-level security scanning API
@@ -47,7 +47,7 @@ export class LLMShield {
   constructor(config: LLMShieldConfig = {}) {
     this.config = {
       cache: config.cache || { maxSize: 1000, ttlSeconds: 3600 },
-      scanners: config.scanners || [],
+      scanners: config.scanners === undefined ? [] : config.scanners,
       models: config.models || {
         enabled: false,
         variant: 'INT8',
@@ -59,6 +59,8 @@ export class LLMShield {
       timeout: config.timeout || 30000,
     };
 
+    // Validate JavaScript callers as well as statically typed callers.
+    this.getScannersToRun(this.config.scanners, 'input');
     this.cache = new Map();
     this.initPromise = this.initialize();
   }
@@ -120,10 +122,14 @@ export class LLMShield {
     this.validateInput(prompt);
 
     const startTime = Date.now();
-    const cacheKey = this.getCacheKey(prompt, options);
+    const scannersToRun = this.getScannersToRun(
+      options.scanners === undefined ? this.config.scanners : options.scanners,
+      'input'
+    );
+    const cacheKey = this.getCacheKey(prompt, options, 'input');
 
     // Check cache
-    if (!options.skipCache) {
+    if (cacheKey !== null) {
       const cached = this.getFromCache(cacheKey);
       if (cached) {
         this.cacheHits++;
@@ -134,12 +140,6 @@ export class LLMShield {
     this.cacheMisses++;
 
     try {
-      // Determine which scanners to run
-      const scannersToRun = this.getScannersToRun(
-        options.scanners || this.config.scanners,
-        'input'
-      );
-
       // Execute scan
       const result = await this.executeScan(
         prompt,
@@ -149,7 +149,7 @@ export class LLMShield {
       );
 
       // Cache result
-      if (!options.skipCache) {
+      if (cacheKey !== null) {
         this.setCache(cacheKey, result);
       }
 
@@ -186,10 +186,14 @@ export class LLMShield {
     this.validateInput(output);
 
     const startTime = Date.now();
-    const cacheKey = this.getCacheKey(output, options);
+    const scannersToRun = this.getScannersToRun(
+      options.scanners === undefined ? this.config.scanners : options.scanners,
+      'output'
+    );
+    const cacheKey = this.getCacheKey(output, options, 'output');
 
     // Check cache
-    if (!options.skipCache) {
+    if (cacheKey !== null) {
       const cached = this.getFromCache(cacheKey);
       if (cached) {
         this.cacheHits++;
@@ -200,12 +204,6 @@ export class LLMShield {
     this.cacheMisses++;
 
     try {
-      // Determine which scanners to run
-      const scannersToRun = this.getScannersToRun(
-        options.scanners || this.config.scanners,
-        'output'
-      );
-
       // Execute scan
       const result = await this.executeScan(
         output,
@@ -215,7 +213,7 @@ export class LLMShield {
       );
 
       // Cache result
-      if (!options.skipCache) {
+      if (cacheKey !== null) {
         this.setCache(cacheKey, result);
       }
 
@@ -255,7 +253,7 @@ export class LLMShield {
       throw new ValidationError('Input must be a non-empty array');
     }
 
-    const startTime = Date.now();
+    const startTime = performance.now();
     const results: ScanResult[] = [];
     const errors: Array<{ index: number; error: string }> = [];
 
@@ -267,13 +265,13 @@ export class LLMShield {
       chunks.push(inputs.slice(i, i + concurrency));
     }
 
-    for (const chunk of chunks) {
+    for (const [chunkIndex, chunk] of chunks.entries()) {
       const promises = chunk.map(async (input, idx) => {
         try {
           return await this.scanPrompt(input, options);
         } catch (error) {
           errors.push({
-            index: idx,
+            index: chunkIndex * concurrency + idx,
             error: error instanceof Error ? error.message : String(error),
           });
           // Return a failed result
@@ -288,7 +286,7 @@ export class LLMShield {
               description: `Scan failed: ${error instanceof Error ? error.message : String(error)}`,
             }],
             scannerResults: [],
-            metadata: createScanMetadata(Date.now() - startTime, 0, false),
+            metadata: createScanMetadata(performance.now() - startTime, 0, false),
           } as ScanResult;
         }
       });
@@ -297,7 +295,7 @@ export class LLMShield {
       results.push(...chunkResults);
     }
 
-    const totalTimeMs = Date.now() - startTime;
+    const totalTimeMs = performance.now() - startTime;
     const successCount = results.filter((r) => r.isValid || r.detections.length === 0).length;
     const failureCount = inputs.length - successCount;
 
@@ -450,9 +448,25 @@ export class LLMShield {
     }
   }
 
-  private getCacheKey(text: string, options: ScanOptions): string {
-    const scanners = (options.scanners || this.config.scanners).sort().join(',');
-    return hashText(`${text}:${scanners}`);
+  private getCacheKey(
+    text: string,
+    options: ScanOptions,
+    category: 'input' | 'output'
+  ): string | null {
+    // Context can contain cycles or mutable objects. Do not serialize or reuse
+    // context-sensitive results, including future WASM-backed output scans.
+    if (
+      options.skipCache ||
+      options.context !== undefined ||
+      options.originalPrompt !== undefined ||
+      !(this.config.cache.maxSize > 0) ||
+      !(this.config.cache.ttlSeconds > 0)
+    ) {
+      return null;
+    }
+    const scanners = [...(options.scanners || this.config.scanners)].sort();
+    // Keep the exact text: a 32-bit hash is not a security cache identity.
+    return JSON.stringify([category, text, scanners]);
   }
 
   private getFromCache(key: string): ScanResult | null {
@@ -462,13 +476,16 @@ export class LLMShield {
     const now = Date.now();
     const age = (now - entry.timestamp) / 1000;
 
-    if (age > this.config.cache.ttlSeconds) {
+    if (age >= this.config.cache.ttlSeconds) {
       this.cache.delete(key);
       return null;
     }
 
+    // Refresh recency, not TTL. Callers must never own the cached object graph.
+    this.cache.delete(key);
+    this.cache.set(key, entry);
     return {
-      ...entry.result,
+      ...structuredClone(entry.result),
       metadata: {
         ...entry.result.metadata,
         cached: true,
@@ -486,7 +503,7 @@ export class LLMShield {
     }
 
     this.cache.set(key, {
-      result,
+      result: structuredClone(result),
       timestamp: Date.now(),
     });
   }
@@ -495,7 +512,13 @@ export class LLMShield {
     requested: ScannerType[],
     category: 'input' | 'output'
   ): ScannerType[] {
+    if (!Array.isArray(requested)) {
+      throw new ValidationError('Scanners must be an array of supported scanner names');
+    }
     const allScanners = this.listScanners();
+    if ([...requested].some((name) => !allScanners.some((scanner) => scanner.name === name))) {
+      throw new ValidationError('Scanners must contain only supported scanner names');
+    }
 
     if (requested.length === 0) {
       // Return all scanners for this category
@@ -504,12 +527,8 @@ export class LLMShield {
         .map((s) => s.name as ScannerType);
     }
 
-    // Validate requested scanners
-    const valid = requested.filter((name) =>
-      allScanners.some((s) => s.name === name)
-    );
-
-    return valid;
+    // Never silently drop an unknown scanner and return a successful empty scan.
+    return [...requested];
   }
 
   private isScannerEnabled(name: string): boolean {
@@ -520,7 +539,7 @@ export class LLMShield {
   private async executeScan(
     text: string,
     scanners: ScannerType[],
-    options: ScanOptions,
+    _options: ScanOptions,
     startTime: number
   ): Promise<ScanResult> {
     // TODO: Integrate with actual WASM scanners
@@ -638,3 +657,5 @@ export class LLMShield {
     return secrets;
   }
 }
+
+

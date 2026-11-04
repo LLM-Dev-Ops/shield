@@ -1,0 +1,9 @@
+{
+  "baseline": "f0c74aec78b0df4e4760562dfcfb12c8abc4368a",
+  "objective": "Reject five explicitly malformed falsy constructor scanner values with ValidationError instead of silently defaulting",
+  "holdoutCount": 5,
+  "anchorCount": 8,
+  "acceptance": ["5/5 holdouts", "8/8 unchanged anchors", "all original test names retained", "no weakened coverage or audit gates", "all CI, required approvals and real Ruflo execution before merge"],
+  "bounds": { "generations": 1, "children": 1, "concurrency": 1, "riskBudget": 0 },
+  "scope": "Built TypeScript wrapper only; existing simulated WASM initialization is not detection-efficacy evidence"
+}

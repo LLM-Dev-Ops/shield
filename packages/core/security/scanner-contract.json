@@ -1,0 +1,9 @@
+{
+  "baseline": "2a59c47d5313c207962a5802a0621e58cd3345e2",
+  "objective": "Reject invalid runtime scanner selections with ValidationError before cache lookup or scanning",
+  "holdouts": 6,
+  "anchors": 6,
+  "acceptance": ["6/6 holdouts and 6/6 anchors", "all original 62 assertions retained", "all 68 candidate assertions pass", "rollup, declarations, lint, typecheck pass", "unchanged global 85 percent coverage, full audits and required Rust CI before merge"],
+  "notClaimed": ["WASM or model scanner efficacy", "production detection benchmark", "latency improvement"],
+  "budgetsSeconds": {"buildEach":60,"tests":60,"coverage":60,"audit":30,"rust":120}
+}

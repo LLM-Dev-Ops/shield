@@ -4,6 +4,8 @@ import path from 'path';
 export default defineConfig({
   test: {
     globals: true,
+    maxWorkers: 2,
+    minWorkers: 1,
     environment: 'node',
     include: ['tests/**/*.test.ts', 'tests/**/*.spec.ts'],
     exclude: ['tests/browser/**/*', 'node_modules/**/*'],
