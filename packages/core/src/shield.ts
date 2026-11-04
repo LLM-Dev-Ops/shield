@@ -47,7 +47,7 @@ export class LLMShield {
   constructor(config: LLMShieldConfig = {}) {
     this.config = {
       cache: config.cache || { maxSize: 1000, ttlSeconds: 3600 },
-      scanners: config.scanners || [],
+      scanners: config.scanners === undefined ? [] : config.scanners,
       models: config.models || {
         enabled: false,
         variant: 'INT8',

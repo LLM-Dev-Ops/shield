@@ -23,7 +23,7 @@ function regression(root) {
   assert(assertions.every(x => x.status === 'passed'));
   const names = assertions.map(x => x.fullName).sort();
   if (root === baseline) { assert.equal(names.length, 42); oldNames = names; }
-  else { assert.equal(names.length, 68); assert(oldNames.every(x => names.includes(x))); }
+  else { assert.equal(names.length, 73); assert(oldNames.every(x => names.includes(x))); }
   return { exit: run.status, assertions: names.length, retainedNames: oldNames, skipped: 0 };
 }
 const result = await fw.runFlywheelGenerations({
